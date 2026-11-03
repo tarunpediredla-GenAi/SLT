@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   Menu,
   X,
@@ -8,6 +8,12 @@ import {
   LogOut,
   UserCheck,
   ShieldAlert,
+  Home,
+  Compass,
+  PlusCircle,
+  User,
+  ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
 import { useLST } from '../context/LSTContext';
 import { formatInr } from '../types/lst';
@@ -31,6 +37,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [notifDrawerOpen, setNotifDrawerOpen] = useState(false);
   const [compareModalOpen, setCompareModalOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
   const comparedProperties = allProperties.filter((p) => compareIds.includes(p.id));
@@ -54,22 +61,22 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <div className="min-h-screen flex flex-col bg-white text-[#17251D]">
       {/* Sticky Top Header — 3-Zone Top Bar Contract */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-neutral-200">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-8">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-200">
+        <div className="max-w-[1360px] mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-4 sm:gap-8">
           {/* Zone 1: Official SLT Culture Logo Lockup */}
           <Link
             to="/"
-            className="flex items-center gap-3 whitespace-nowrap shrink-0 focus:outline-none"
+            className="flex items-center gap-2 sm:gap-3 whitespace-nowrap shrink-0 focus:outline-none"
           >
             <img
               src="/assets/aistudio/image_de4003f1.png"
               alt="SLT Culture Official Logo"
-              className="h-10 w-auto object-contain"
+              className="h-8 sm:h-10 w-auto object-contain"
             />
           </Link>
 
-          {/* Zone 2: 5 Concise Single-Line Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-[#17251D]/80">
+          {/* Zone 2: 5 Concise Single-Line Navigation Links (Desktop & Tablet Lg) */}
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-7 text-sm font-medium text-[#17251D]/80">
             <NavLink
               to="/"
               end
@@ -124,18 +131,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </nav>
 
           {/* Zone 3: Primary Action & Role Workspace Access */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {firebaseUser ? (
               <>
                 <button
                   type="button"
                   onClick={() => setNotifDrawerOpen(!notifDrawerOpen)}
-                  className="relative p-2 rounded-lg text-[#17251D] hover:bg-neutral-100 transition-colors"
+                  className="relative p-2 rounded-lg text-[#17251D] hover:bg-neutral-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                   aria-label="Notifications"
                 >
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#D5AD51] text-[#17251D] text-[10px] font-bold flex items-center justify-center font-mono-tabular">
+                    <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#D5AD51] text-[#17251D] text-[10px] font-bold flex items-center justify-center font-mono-tabular">
                       {unreadCount}
                     </span>
                   )}
@@ -143,7 +150,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
                 <Link
                   to={primaryDash.path}
-                  className="px-4 py-2 rounded-lg bg-[#124A32] text-white text-xs sm:text-sm font-medium hover:bg-[#17251D] transition-colors whitespace-nowrap shrink-0"
+                  className="hidden sm:inline-flex items-center px-3.5 sm:px-4 py-2 rounded-lg bg-[#124A32] text-white text-xs sm:text-sm font-medium hover:bg-[#17251D] transition-colors whitespace-nowrap shrink-0 min-h-[40px]"
                 >
                   {primaryDash.label}
                 </Link>
@@ -151,16 +158,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             ) : (
               <Link
                 to="/login"
-                className="px-4 py-2 rounded-lg bg-[#124A32] text-white text-xs sm:text-sm font-medium hover:bg-[#17251D] transition-colors whitespace-nowrap shrink-0"
+                className="px-3 sm:px-4 py-2 rounded-lg bg-[#124A32] text-white text-xs sm:text-sm font-medium hover:bg-[#17251D] transition-colors whitespace-nowrap shrink-0 min-h-[40px] flex items-center"
               >
-                Sign In / Register
+                Sign In
               </Link>
             )}
 
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg text-[#17251D] hover:bg-neutral-100"
+              className="lg:hidden p-2 rounded-lg text-[#17251D] hover:bg-neutral-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -168,130 +175,173 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
         </div>
 
-        {/* Role Sub-Bar for Authenticated Users with Multiple Dashboards */}
+        {/* Role Sub-Bar for Authenticated Users with Multiple Dashboards (Horizontally Scrollable) */}
         {firebaseUser && userProfile && (
-          <div className="bg-[#F7F9F7] border-t border-neutral-200 px-4 sm:px-6 py-1.5">
-            <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-4 text-xs overflow-x-auto">
-              <div className="flex items-center gap-4 whitespace-nowrap">
-                <span className="text-neutral-500">
-                  Signed in as <strong className="text-[#17251D]">{userProfile.fullName}</strong> (
-                  {userProfile.email})
+          <div className="bg-[#F7F9F7] border-t border-neutral-200 px-3 sm:px-6 py-2">
+            <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3 overflow-x-auto no-scrollbar whitespace-nowrap py-0.5">
+                <span className="text-neutral-500 shrink-0">
+                  <strong className="text-[#17251D]">{userProfile.fullName}</strong>
                 </span>
-                <span aria-hidden="true" className="text-neutral-300">
-                  |
-                </span>
-                <Link to="/buyer" className="font-medium text-[#124A32] hover:underline">
+                <span aria-hidden="true" className="text-neutral-300">|</span>
+                <Link to="/buyer" className="font-medium text-[#124A32] hover:underline shrink-0">
                   Buyer Dashboard
                 </Link>
-                <Link to="/seller" className="font-medium text-[#124A32] hover:underline">
+                <Link to="/seller" className="font-medium text-[#124A32] hover:underline shrink-0">
                   Seller Dashboard
                 </Link>
                 {isAgent && (
-                  <Link to="/agent" className="font-medium text-[#124A32] hover:underline">
+                  <Link to="/agent" className="font-medium text-[#124A32] hover:underline shrink-0">
                     Agent Dashboard
                   </Link>
                 )}
                 {isAdmin && (
-                  <Link to="/admin" className="font-semibold text-[#124A32] hover:underline">
-                    Admin Control Portal
+                  <Link to="/admin" className="font-semibold text-[#124A32] hover:underline shrink-0">
+                    Admin Portal
                   </Link>
                 )}
               </div>
               <button
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex items-center gap-1 text-neutral-600 hover:text-red-700 font-medium whitespace-nowrap shrink-0"
+                className="inline-flex items-center gap-1 text-neutral-600 hover:text-red-700 font-medium whitespace-nowrap shrink-0 pl-2 min-h-[32px]"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>Sign Out</span>
+                <span className="hidden sm:inline">Sign Out</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* Mobile Hamburger Drawer */}
+        {/* Mobile Hamburger Drawer with Backdrop Blur */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-neutral-200 px-4 py-4 space-y-3">
-            <div className="flex flex-col space-y-2 text-sm font-medium">
-              <Link to="/" onClick={() => setMobileMenuOpen(false)} className="py-1.5">
-                Home
-              </Link>
-              <Link to="/browse" onClick={() => setMobileMenuOpen(false)} className="py-1.5">
-                Browse Land
-              </Link>
-              <Link to="/sell" onClick={() => setMobileMenuOpen(false)} className="py-1.5">
-                Sell Your Land
-              </Link>
-              <Link to="/how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-1.5">
-                How It Works
-              </Link>
-              <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="py-1.5">
-                About SLT Culture
-              </Link>
-              <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="py-1.5">
-                Contact Us
-              </Link>
+          <div className="fixed inset-0 top-16 z-50 lg:hidden">
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-xs"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div className="relative bg-white border-b border-neutral-200 px-4 py-5 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto shadow-2xl">
+              <div className="text-xs font-semibold uppercase tracking-wider text-[#124A32] px-2">
+                Navigation
+              </div>
+              <div className="flex flex-col space-y-1 text-sm font-medium">
+                <Link
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2.5 rounded-lg hover:bg-neutral-50 flex items-center justify-between text-[#17251D]"
+                >
+                  <span>Home</span>
+                  <ChevronRight className="w-4 h-4 text-neutral-400" />
+                </Link>
+                <Link
+                  to="/browse"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2.5 rounded-lg hover:bg-neutral-50 flex items-center justify-between text-[#17251D]"
+                >
+                  <span>Browse Land Parcels</span>
+                  <ChevronRight className="w-4 h-4 text-neutral-400" />
+                </Link>
+                <Link
+                  to="/sell"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2.5 rounded-lg hover:bg-neutral-50 flex items-center justify-between text-[#17251D]"
+                >
+                  <span>Sell & Register Your Land</span>
+                  <ChevronRight className="w-4 h-4 text-neutral-400" />
+                </Link>
+                <Link
+                  to="/how-it-works"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2.5 rounded-lg hover:bg-neutral-50 flex items-center justify-between text-[#17251D]"
+                >
+                  <span>10-Stage Screening Process</span>
+                  <ChevronRight className="w-4 h-4 text-neutral-400" />
+                </Link>
+                <Link
+                  to="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2.5 rounded-lg hover:bg-neutral-50 flex items-center justify-between text-[#17251D]"
+                >
+                  <span>About SLT Culture</span>
+                  <ChevronRight className="w-4 h-4 text-neutral-400" />
+                </Link>
+                <Link
+                  to="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2.5 rounded-lg hover:bg-neutral-50 flex items-center justify-between text-[#17251D]"
+                >
+                  <span>Contact & Enquiry</span>
+                  <ChevronRight className="w-4 h-4 text-neutral-400" />
+                </Link>
+              </div>
+
+              {firebaseUser ? (
+                <div className="pt-3 border-t border-neutral-200 space-y-2">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-neutral-500 px-2">
+                    My Portals
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      to="/buyer"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-2.5 rounded-lg bg-[#F7F9F7] border border-neutral-200 text-xs font-medium text-center"
+                    >
+                      Buyer Portal
+                    </Link>
+                    <Link
+                      to="/seller"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="px-3 py-2.5 rounded-lg bg-[#F7F9F7] border border-neutral-200 text-xs font-medium text-center"
+                    >
+                      Seller Portal
+                    </Link>
+                    {isAgent && (
+                      <Link
+                        to="/agent"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="px-3 py-2.5 rounded-lg bg-[#F7F9F7] border border-neutral-200 text-xs font-medium text-center"
+                      >
+                        Agent Portal
+                      </Link>
+                    )}
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="px-3 py-2.5 rounded-lg bg-[#124A32] text-white text-xs font-medium text-center"
+                      >
+                        Admin Portal
+                      </Link>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full mt-2 py-2.5 rounded-lg bg-red-50 text-red-700 text-xs font-semibold flex items-center justify-center gap-1.5"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-3 border-t border-neutral-200 grid grid-cols-2 gap-2">
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="py-2.5 rounded-lg bg-[#124A32] text-white text-xs font-semibold text-center"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="py-2.5 rounded-lg border border-[#124A32] text-[#124A32] text-xs font-semibold text-center"
+                  >
+                    Create Account
+                  </Link>
+                </div>
+              )}
             </div>
-            {firebaseUser ? (
-              <div className="pt-3 border-t border-neutral-200 flex flex-wrap gap-2">
-                <Link
-                  to="/buyer"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-1.5 rounded-lg bg-[#F7F9F7] border border-neutral-200 text-xs font-medium"
-                >
-                  Buyer Dashboard
-                </Link>
-                <Link
-                  to="/seller"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-1.5 rounded-lg bg-[#F7F9F7] border border-neutral-200 text-xs font-medium"
-                >
-                  Seller Dashboard
-                </Link>
-                {isAgent && (
-                  <Link
-                    to="/agent"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-1.5 rounded-lg bg-[#F7F9F7] border border-neutral-200 text-xs font-medium"
-                  >
-                    Agent Dashboard
-                  </Link>
-                )}
-                {isAdmin && (
-                  <Link
-                    to="/admin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-3 py-1.5 rounded-lg bg-[#124A32] text-white text-xs font-medium"
-                  >
-                    Admin Dashboard
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="px-3 py-1.5 rounded-lg bg-red-50 text-red-700 text-xs font-medium"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="pt-3 border-t border-neutral-200 flex gap-2">
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-[#124A32] text-white text-xs font-medium"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-[#124A32] text-[#124A32] text-xs font-medium"
-                >
-                  Create Account
-                </Link>
-              </div>
-            )}
           </div>
         )}
       </header>
@@ -350,14 +400,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </div>
       )}
 
-      {/* Main Content Viewport */}
-      <main className="flex-1">{children}</main>
+      {/* Main Content Viewport with mobile bottom bar padding */}
+      <main className="flex-1 pb-20 lg:pb-0">{children}</main>
 
-      {/* Sticky Compare Bar (when properties selected) */}
+      {/* Sticky Compare Bar (when properties selected) — Mobile Optimized */}
       {comparedProperties.length > 0 && (
-        <div className="sticky bottom-0 z-30 bg-[#17251D] text-white border-t border-[#D5AD51]/40 px-4 py-3 shadow-lg">
-          <div className="max-w-[1360px] mx-auto flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-wrap">
+        <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 z-30 bg-[#17251D] text-white border-t border-[#D5AD51]/40 px-3 sm:px-6 py-2.5 sm:py-3 shadow-2xl">
+          <div className="max-w-[1360px] mx-auto flex items-center justify-between gap-3">
+            {/* Desktop / Tablet View */}
+            <div className="hidden sm:flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-[#D5AD51]">
                 <Scale className="w-4 h-4" />
                 <span>Compare Lands ({comparedProperties.length}/3):</span>
@@ -365,31 +416,39 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               {comparedProperties.map((cp) => (
                 <div
                   key={cp.id}
-                  className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-lg text-xs"
+                  className="flex items-center gap-2 bg-white/10 px-2.5 py-1 rounded-lg text-xs"
                 >
-                  <span className="truncate max-w-[180px]">{cp.title}</span>
+                  <span className="truncate max-w-[140px] md:max-w-[180px]">{cp.title}</span>
                   <button
                     type="button"
                     onClick={() => toggleCompareProperty(cp.id)}
-                    className="text-white/70 hover:text-white"
+                    className="text-white/70 hover:text-white p-0.5"
+                    aria-label="Remove"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Mobile View: Compact Label */}
+            <div className="sm:hidden flex items-center gap-2 text-xs font-semibold text-[#D5AD51]">
+              <Scale className="w-4 h-4" />
+              <span>Comparing ({comparedProperties.length}/3)</span>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={clearCompare}
-                className="px-3 py-1.5 rounded-lg text-xs text-white/80 hover:text-white"
+                className="px-2.5 py-1.5 rounded-lg text-xs text-white/80 hover:text-white min-h-[36px]"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => setCompareModalOpen(true)}
-                className="px-4 py-1.5 rounded-lg bg-[#D5AD51] text-[#17251D] text-xs font-semibold hover:bg-[#e2be69] transition-colors whitespace-nowrap shrink-0"
+                className="px-3.5 sm:px-4 py-1.5 rounded-lg bg-[#D5AD51] text-[#17251D] text-xs font-semibold hover:bg-[#e2be69] transition-colors whitespace-nowrap min-h-[36px] flex items-center"
               >
                 Compare Side-by-Side
               </button>
@@ -398,39 +457,40 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </div>
       )}
 
-      {/* Side-by-Side Property Comparison Modal */}
+      {/* Side-by-Side Property Comparison Modal — Fully Responsive */}
       {compareModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-5xl w-full max-h-[88vh] overflow-y-auto p-6">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-200">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl">
+            <div className="flex items-start justify-between pb-4 border-b border-neutral-200 gap-3">
               <div>
-                <h3 className="font-serif-display text-xl font-semibold text-[#17251D]">
+                <h3 className="font-serif-display text-lg sm:text-xl font-semibold text-[#17251D]">
                   Land Parcel Comparison Matrix
                 </h3>
-                <p className="text-xs text-neutral-600">
-                  Compare verified land metrics, facilities, and screening stages in Indian Rupees (₹)
+                <p className="text-xs text-neutral-600 mt-0.5">
+                  Side-by-side comparison of verified metrics, access, and screening stages in Indian Rupees (₹)
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setCompareModalOpen(false)}
-                className="p-2 rounded-lg hover:bg-neutral-100"
+                className="p-2 rounded-lg hover:bg-neutral-100 min-h-[44px] min-w-[44px] flex items-center justify-center text-neutral-500 hover:text-neutral-900"
+                aria-label="Close Comparison"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="overflow-x-auto mt-4">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto mt-4 -mx-4 sm:mx-0 px-4 sm:px-0">
+              <table className="w-full text-left border-collapse text-xs min-w-[560px]">
                 <thead>
                   <tr className="border-b border-neutral-200 bg-[#F7F9F7]">
-                    <th className="p-3 font-semibold text-neutral-600 w-44">Specification</th>
+                    <th className="p-3 font-semibold text-neutral-600 w-36 sm:w-44">Specification</th>
                     {comparedProperties.map((p) => (
-                      <th key={p.id} className="p-3 font-semibold text-[#124A32] min-w-[220px]">
+                      <th key={p.id} className="p-3 font-semibold text-[#124A32] min-w-[180px]">
                         <Link
                           to={`/land/${p.id}`}
                           onClick={() => setCompareModalOpen(false)}
-                          className="hover:underline"
+                          className="hover:underline line-clamp-1"
                         >
                           {p.title}
                         </Link>
@@ -496,15 +556,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       )}
 
       {/* Professional SLT Culture Footer */}
-      <footer className="bg-[#17251D] text-white border-t border-[#124A32] mt-16">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-14">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+      <footer className="bg-[#17251D] text-white border-t border-[#124A32] mt-16 pb-8 lg:pb-0">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-12 sm:py-14">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
             <div>
-              <div className="bg-white inline-block p-2.5 rounded-lg mb-4">
+              <div className="bg-white inline-block p-2 rounded-lg mb-4">
                 <img
                   src="/assets/aistudio/image_de4003f1.png"
                   alt="SLT Culture Official Logo"
-                  className="h-10 w-auto object-contain"
+                  className="h-9 w-auto object-contain"
                 />
               </div>
               <p className="text-sm font-serif-display text-[#D5AD51] italic">
@@ -516,32 +576,32 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#D5AD51] mb-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#D5AD51] mb-3 sm:mb-4">
                 Marketplace & Workflows
               </h4>
               <ul className="space-y-2.5 text-xs text-white/80">
                 <li>
-                  <Link to="/browse" className="hover:text-white transition-colors">
+                  <Link to="/browse" className="hover:text-white transition-colors py-1 block">
                     Browse Verified Lands
                   </Link>
                 </li>
                 <li>
-                  <Link to="/sell" className="hover:text-white transition-colors">
+                  <Link to="/sell" className="hover:text-white transition-colors py-1 block">
                     Sell & Register Your Land
                   </Link>
                 </li>
                 <li>
-                  <Link to="/how-it-works" className="hover:text-white transition-colors">
+                  <Link to="/how-it-works" className="hover:text-white transition-colors py-1 block">
                     10-Stage Land Screening Process
                   </Link>
                 </li>
                 <li>
-                  <Link to="/about" className="hover:text-white transition-colors">
+                  <Link to="/about" className="hover:text-white transition-colors py-1 block">
                     About SLT Culture
                   </Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="hover:text-white transition-colors">
+                  <Link to="/contact" className="hover:text-white transition-colors py-1 block">
                     Contact & Enquiry Support
                   </Link>
                 </li>
@@ -549,32 +609,32 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#D5AD51] mb-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#D5AD51] mb-3 sm:mb-4">
                 Protected Role Portals
               </h4>
               <ul className="space-y-2.5 text-xs text-white/80">
                 <li>
-                  <Link to="/buyer" className="hover:text-white transition-colors">
+                  <Link to="/buyer" className="hover:text-white transition-colors py-1 block">
                     Buyer Dashboard
                   </Link>
                 </li>
                 <li>
-                  <Link to="/seller" className="hover:text-white transition-colors">
+                  <Link to="/seller" className="hover:text-white transition-colors py-1 block">
                     Seller Dashboard
                   </Link>
                 </li>
                 <li>
-                  <Link to="/agent" className="hover:text-white transition-colors">
+                  <Link to="/agent" className="hover:text-white transition-colors py-1 block">
                     Field Agent Inspection Portal
                   </Link>
                 </li>
                 <li>
-                  <Link to="/admin" className="hover:text-white transition-colors">
+                  <Link to="/admin" className="hover:text-white transition-colors py-1 block">
                     Administration Portal
                   </Link>
                 </li>
                 <li>
-                  <Link to="/login" className="hover:text-white transition-colors">
+                  <Link to="/login" className="hover:text-white transition-colors py-1 block">
                     Account Login / Signup
                   </Link>
                 </li>
@@ -582,32 +642,112 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             </div>
 
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#D5AD51] mb-4">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#D5AD51] mb-3 sm:mb-4">
                 Legal & Verification Notice
               </h4>
               <p className="text-xs text-white/75 leading-relaxed">
                 SLT Culture provides physical screening, soil testing coordination, and registration assistance. Final title certification and government registration are executed before the Sub-Registrar and verified by licensed legal/revenue professionals.
               </p>
               <div className="flex items-center gap-4 mt-4 text-xs text-[#82B440]">
-                <Link to="/privacy" className="hover:underline">
+                <Link to="/privacy" className="hover:underline py-1">
                   Privacy Policy
                 </Link>
                 <span>·</span>
-                <Link to="/terms" className="hover:underline">
+                <Link to="/terms" className="hover:underline py-1">
                   Terms & Conditions
                 </Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60">
+          <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60 text-center sm:text-left">
             <span>
-              © {new Date().getFullYear()} SLT Culture – Land Screening and Transforming (LST). All rights reserved.
+              © {new Date().getFullYear()} SLT Culture – Land Screening and Transforming (LST).
             </span>
             <span>All land values denominated in Indian Rupees (₹ INR).</span>
           </div>
         </div>
       </footer>
+
+      {/* Mobile Fixed Bottom Tab Bar (Ergonomic Thumb Navigation for Phones) */}
+      <nav
+        aria-label="Mobile Bottom Navigation"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-neutral-200 shadow-lg"
+      >
+        <div className="grid grid-cols-5 items-center h-16 max-w-lg mx-auto px-1">
+          {/* 1. Home */}
+          <Link
+            to="/"
+            className={`flex flex-col items-center justify-center py-1 transition-colors min-h-[44px] ${
+              location.pathname === '/' ? 'text-[#124A32] font-semibold' : 'text-neutral-500 hover:text-[#17251D]'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-[10px] tracking-tight mt-1">Home</span>
+          </Link>
+
+          {/* 2. Browse Land */}
+          <Link
+            to="/browse"
+            className={`flex flex-col items-center justify-center py-1 transition-colors min-h-[44px] ${
+              location.pathname.startsWith('/browse') || location.pathname.startsWith('/land')
+                ? 'text-[#124A32] font-semibold'
+                : 'text-neutral-500 hover:text-[#17251D]'
+            }`}
+          >
+            <Compass className="w-5 h-5" />
+            <span className="text-[10px] tracking-tight mt-1">Browse</span>
+          </Link>
+
+          {/* 3. Sell Land */}
+          <Link
+            to="/sell"
+            className={`flex flex-col items-center justify-center py-1 transition-colors min-h-[44px] ${
+              location.pathname === '/sell' ? 'text-[#124A32] font-semibold' : 'text-neutral-500 hover:text-[#17251D]'
+            }`}
+          >
+            <PlusCircle className="w-5 h-5 text-[#82B440]" />
+            <span className="text-[10px] tracking-tight mt-1">Sell Land</span>
+          </Link>
+
+          {/* 4. Notifications */}
+          <button
+            type="button"
+            onClick={() => setNotifDrawerOpen(true)}
+            className="flex flex-col items-center justify-center py-1 text-neutral-500 hover:text-[#17251D] transition-colors relative min-h-[44px]"
+          >
+            <div className="relative">
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-0.5 rounded-full bg-[#D5AD51] text-[#17251D] text-[9px] font-bold flex items-center justify-center font-mono-tabular">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] tracking-tight mt-1">Alerts</span>
+          </button>
+
+          {/* 5. Dashboard / Account */}
+          <Link
+            to={firebaseUser ? primaryDash.path : '/login'}
+            className={`flex flex-col items-center justify-center py-1 transition-colors min-h-[44px] ${
+              location.pathname === '/buyer' ||
+              location.pathname === '/seller' ||
+              location.pathname === '/agent' ||
+              location.pathname === '/admin' ||
+              location.pathname === '/login'
+                ? 'text-[#124A32] font-semibold'
+                : 'text-neutral-500 hover:text-[#17251D]'
+            }`}
+          >
+            <User className="w-5 h-5" />
+            <span className="text-[10px] tracking-tight mt-1 truncate max-w-[55px]">
+              {firebaseUser ? (isAdmin ? 'Admin' : isAgent ? 'Agent' : 'Portal') : 'Sign In'}
+            </span>
+          </Link>
+        </div>
+      </nav>
     </div>
   );
 };
+

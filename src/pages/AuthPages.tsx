@@ -623,7 +623,7 @@ export const OnboardingModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/65 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl max-w-xl w-full p-7 border border-neutral-200 my-8">
+      <div className="bg-white rounded-xl max-w-xl w-full p-5 sm:p-7 border border-neutral-200 my-8">
         <div className="flex items-center justify-between pb-4 border-b border-neutral-200">
           <div className="flex items-center gap-3">
             <img

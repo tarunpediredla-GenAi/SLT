@@ -85,58 +85,58 @@ export const HomePage: React.FC = () => {
     <div>
       {/* 1. Hero Section — Split 2-Column with Official SLT Culture Logo */}
       <section className="bg-[#124A32] text-white border-b border-[#D5AD51]/30">
-        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-14 lg:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
+        <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-10 sm:py-14 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
             <div className="lg:col-span-7 flex flex-col justify-between">
               <div>
-                <div className="inline-flex items-center gap-3 bg-white px-3.5 py-2 rounded-lg mb-6">
+                <div className="inline-flex items-center gap-2.5 sm:gap-3 bg-white px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg mb-5 sm:mb-6">
                   <img
                     src="/assets/aistudio/image_de4003f1.png"
                     alt="SLT Culture Official Logo"
-                    className="h-9 w-auto object-contain"
+                    className="h-7 sm:h-9 w-auto object-contain"
                   />
-                  <span className="text-xs font-semibold text-[#17251D] border-l border-neutral-300 pl-3">
+                  <span className="text-[11px] sm:text-xs font-semibold text-[#17251D] border-l border-neutral-300 pl-2.5 sm:pl-3">
                     Land Screening & Transforming (LST)
                   </span>
                 </div>
 
-                <h1 className="font-serif-display text-4xl sm:text-5xl lg:text-[54px] font-semibold tracking-tight leading-[1.12] text-white">
+                <h1 className="font-serif-display text-3xl sm:text-4xl lg:text-[52px] font-semibold tracking-tight leading-[1.14] text-white">
                   Transforming Land into Opportunities.
                 </h1>
 
-                <p className="text-base sm:text-lg text-white/85 mt-5 max-w-2xl leading-relaxed">
+                <p className="text-sm sm:text-base lg:text-lg text-white/85 mt-4 sm:mt-5 max-w-2xl leading-relaxed">
                   Discover, verify, buy, and sell land with confidence through SLT Culture. Your Land. Our Responsibility. A Better Future.
                 </p>
 
-                <div className="flex flex-wrap items-center gap-4 mt-8">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
                   <Link
                     to="/browse"
-                    className="px-6 py-3.5 rounded-lg bg-[#D5AD51] text-[#17251D] text-sm font-semibold hover:bg-[#e1bd67] transition-colors inline-flex items-center gap-2 whitespace-nowrap shrink-0"
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-lg bg-[#D5AD51] text-[#17251D] text-sm font-semibold hover:bg-[#e1bd67] transition-colors inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0 min-h-[44px]"
                   >
                     <span>Explore Lands</span>
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                   <Link
                     to="/sell"
-                    className="px-6 py-3.5 rounded-lg border border-white/40 bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition-colors whitespace-nowrap shrink-0"
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-lg border border-white/40 bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition-colors whitespace-nowrap shrink-0 inline-flex items-center justify-center min-h-[44px]"
                   >
                     List Your Land
                   </Link>
                 </div>
               </div>
 
-              <div className="mt-10 pt-6 border-t border-white/15 grid grid-cols-3 gap-6 text-xs">
-                <div>
-                  <div className="font-mono-tabular text-xl font-bold text-[#D5AD51]">10-Stage</div>
-                  <div className="text-white/75 mt-0.5">Physical & Document Screening</div>
+              <div className="mt-8 sm:mt-10 pt-5 sm:pt-6 border-t border-white/15 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 text-xs">
+                <div className="bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-lg">
+                  <div className="font-mono-tabular text-lg sm:text-xl font-bold text-[#D5AD51]">10-Stage</div>
+                  <div className="text-white/80 mt-0.5">Physical & Document Screening</div>
                 </div>
-                <div>
-                  <div className="font-mono-tabular text-xl font-bold text-[#82B440]">100%</div>
-                  <div className="text-white/75 mt-0.5">Admin Reviewed Before Publish</div>
+                <div className="bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-lg">
+                  <div className="font-mono-tabular text-lg sm:text-xl font-bold text-[#82B440]">100%</div>
+                  <div className="text-white/80 mt-0.5">Admin Reviewed Before Publish</div>
                 </div>
-                <div>
-                  <div className="font-mono-tabular text-xl font-bold text-white">₹ INR</div>
-                  <div className="text-white/75 mt-0.5">Transparent Direct Valuation</div>
+                <div className="bg-white/5 sm:bg-transparent p-3 sm:p-0 rounded-lg">
+                  <div className="font-mono-tabular text-lg sm:text-xl font-bold text-white">₹ INR</div>
+                  <div className="text-white/80 mt-0.5">Transparent Direct Valuation</div>
                 </div>
               </div>
             </div>
@@ -146,9 +146,9 @@ export const HomePage: React.FC = () => {
                 <img
                   src="/assets/land-hero.svg"
                   alt="SLT Culture Land Screening Survey Illustration"
-                  className="w-full h-64 lg:h-full object-cover"
+                  className="w-full h-52 sm:h-64 lg:h-full object-cover"
                 />
-                <div className="p-5 bg-[#17251D] border-t border-white/10">
+                <div className="p-4 sm:p-5 bg-[#17251D] border-t border-white/10">
                   <div className="flex items-center justify-between text-xs text-[#D5AD51] font-mono-tabular">
                     <span>HUMAN-IN-THE-LOOP VERIFICATION</span>
                     <span>STAGES 01 – 10</span>
@@ -242,47 +242,47 @@ export const HomePage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mt-8">
             {/* Seller Card */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-7 flex flex-col justify-between">
+            <div className="bg-white border border-neutral-200 rounded-xl p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="text-xs font-mono-tabular font-semibold text-[#124A32]">
                   01. FOR LANDOWNERS (SELLER WORKFLOW)
                 </div>
-                <h3 className="font-serif-display text-2xl font-semibold text-[#17251D] mt-2">
+                <h3 className="font-serif-display text-xl sm:text-2xl font-semibold text-[#17251D] mt-2">
                   Screen, Verify, and List Your Land Securely
                 </h3>
-                <p className="text-sm text-neutral-600 mt-2 leading-relaxed">
+                <p className="text-xs sm:text-sm text-neutral-600 mt-2 leading-relaxed">
                   Submit your personal and land survey details, upload private ownership records into our restricted vault, and schedule an SLT field agent visit.
                 </p>
 
                 <ul className="mt-5 space-y-2.5 text-xs text-[#17251D]">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0" />
+                  <li className="flex items-start sm:items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0 mt-0.5 sm:mt-0" />
                     <span>Step 1: Login / Signup & Select Seller Profile</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0" />
+                  <li className="flex items-start sm:items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0 mt-0.5 sm:mt-0" />
                     <span>Step 2: Enter Personal Details, Survey No., Area & Expected Price (₹)</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0" />
+                  <li className="flex items-start sm:items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0 mt-0.5 sm:mt-0" />
                     <span>Step 3: Upload Protected Ownership Deeds, EC & Soil Reports</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0" />
+                  <li className="flex items-start sm:items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0 mt-0.5 sm:mt-0" />
                     <span>Step 4: Agent On-Site Verification → Admin Approval → Public Listing</span>
                   </li>
                 </ul>
               </div>
 
-              <div className="mt-7 pt-5 border-t border-neutral-100 flex items-center justify-between">
+              <div className="mt-6 sm:mt-7 pt-4 sm:pt-5 border-t border-neutral-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <span className="text-xs text-neutral-500">
                   Private documents never exposed publicly
                 </span>
                 <Link
                   to="/sell"
-                  className="px-5 py-2.5 rounded-lg bg-[#124A32] text-white text-xs font-semibold hover:bg-[#17251D] transition-colors"
+                  className="px-5 py-2.5 rounded-lg bg-[#124A32] text-white text-xs font-semibold hover:bg-[#17251D] transition-colors text-center min-h-[40px] flex items-center justify-center"
                 >
                   Register Land to Sell
                 </Link>
@@ -290,45 +290,45 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Buyer Card */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-7 flex flex-col justify-between">
+            <div className="bg-white border border-neutral-200 rounded-xl p-5 sm:p-7 flex flex-col justify-between">
               <div>
                 <div className="text-xs font-mono-tabular font-semibold text-[#124A32]">
                   02. FOR LAND BUYERS & INVESTORS (BUYER WORKFLOW)
                 </div>
-                <h3 className="font-serif-display text-2xl font-semibold text-[#17251D] mt-2">
+                <h3 className="font-serif-display text-xl sm:text-2xl font-semibold text-[#17251D] mt-2">
                   Acquire Screened Land with Guided Site Visits
                 </h3>
-                <p className="text-sm text-neutral-600 mt-2 leading-relaxed">
+                <p className="text-xs sm:text-sm text-neutral-600 mt-2 leading-relaxed">
                   Filter verified agricultural, residential, commercial, and industrial lands by district, price, and area. Compare parcels side-by-side and book an agent-accompanied visit.
                 </p>
 
                 <ul className="mt-5 space-y-2.5 text-xs text-[#17251D]">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0" />
+                  <li className="flex items-start sm:items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0 mt-0.5 sm:mt-0" />
                     <span>Step 1: Browse Approved Lands with Screening & Soil Summaries</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0" />
+                  <li className="flex items-start sm:items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0 mt-0.5 sm:mt-0" />
                     <span>Step 2: Select Property, Compare Metrics & Save Favourites</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0" />
+                  <li className="flex items-start sm:items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0 mt-0.5 sm:mt-0" />
                     <span>Step 3: Register Interest or Request Site Visit with Personal Details</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0" />
+                  <li className="flex items-start sm:items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#82B440] shrink-0 mt-0.5 sm:mt-0" />
                     <span>Step 4: Dedicated SLT Agent Approaches You & Coordinates Registration</span>
                   </li>
                 </ul>
               </div>
 
-              <div className="mt-7 pt-5 border-t border-neutral-100 flex items-center justify-between">
+              <div className="mt-6 sm:mt-7 pt-4 sm:pt-5 border-t border-neutral-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <span className="text-xs text-neutral-500">
                   Real-time enquiry tracking in Buyer Dashboard
                 </span>
                 <Link
                   to="/browse"
-                  className="px-5 py-2.5 rounded-lg bg-[#D5AD51] text-[#17251D] text-xs font-semibold hover:bg-[#e1bd67] transition-colors"
+                  className="px-5 py-2.5 rounded-lg bg-[#D5AD51] text-[#17251D] text-xs font-semibold hover:bg-[#e1bd67] transition-colors text-center min-h-[40px] flex items-center justify-center"
                 >
                   Browse Verified Land
                 </Link>

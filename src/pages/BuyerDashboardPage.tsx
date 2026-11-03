@@ -127,8 +127,8 @@ export const BuyerDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Segmented Navigation Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-[#F7F9F7] border border-neutral-200 rounded-xl">
+      {/* Segmented Navigation Tabs (Smooth Horizontal Swipe on Mobile/Tablet) */}
+      <div className="flex items-center gap-1.5 p-1.5 bg-[#F7F9F7] border border-neutral-200 rounded-xl overflow-x-auto no-scrollbar">
         {[
           { id: 'enquiries', label: `My Enquiries (${myEnquiries.length})` },
           { id: 'visits', label: `Site Visits (${myAppointments.length})` },
@@ -140,9 +140,9 @@ export const BuyerDashboardPage: React.FC = () => {
             key={t.id}
             type="button"
             onClick={() => setActiveTab(t.id as any)}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+            className={`px-3.5 sm:px-4 py-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 min-h-[38px] ${
               activeTab === t.id
-                ? 'bg-[#124A32] text-white'
+                ? 'bg-[#124A32] text-white shadow-xs'
                 : 'text-neutral-600 hover:text-[#17251D]'
             }`}
           >
@@ -154,8 +154,8 @@ export const BuyerDashboardPage: React.FC = () => {
       {/* Tab 1: My Enquiries */}
       {activeTab === 'enquiries' && (
         <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
-          <div className="p-5 border-b border-neutral-200">
-            <h2 className="font-serif-display text-xl font-semibold text-[#17251D]">
+          <div className="p-4 sm:p-5 border-b border-neutral-200">
+            <h2 className="font-serif-display text-lg sm:text-xl font-semibold text-[#17251D]">
               Registered Interest & Callback Enquiries
             </h2>
             <p className="text-xs text-neutral-500">
@@ -176,8 +176,8 @@ export const BuyerDashboardPage: React.FC = () => {
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+              <table className="w-full text-left border-collapse text-xs min-w-[640px]">
                 <thead>
                   <tr className="border-b border-neutral-200 bg-[#F7F9F7] text-neutral-600">
                     <th className="p-4 font-semibold">Enquiry ID</th>

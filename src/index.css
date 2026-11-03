@@ -15,6 +15,7 @@
     font-family: var(--font-sans);
     color: #17251D;
     background-color: #FFFFFF;
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1, h2, h3, .font-serif-display {
@@ -27,3 +28,13 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* Mobile & Touch Utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

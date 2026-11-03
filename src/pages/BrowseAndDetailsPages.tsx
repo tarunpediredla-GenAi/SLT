@@ -44,7 +44,20 @@ export const BrowseLandPage: React.FC = () => {
   const [verificationFilter, setVerificationFilter] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc' | 'area_desc'>('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const navigate = useNavigate();
+
+  const activeFilterCount = [
+    searchQuery.trim(),
+    selectedState !== 'All' ? selectedState : '',
+    districtFilter.trim(),
+    selectedCategory !== 'All' ? selectedCategory : '',
+    minPriceLakhs,
+    maxPriceLakhs,
+    minArea,
+    maxArea,
+    verificationFilter !== 'All' ? verificationFilter : '',
+  ].filter(Boolean).length;
 
   const filteredProperties = useMemo(() => {
     return publishedProperties
@@ -127,45 +140,55 @@ export const BrowseLandPage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="lg:hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#124A32] text-white text-xs font-semibold"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <span>{filtersOpen ? 'Hide Filters' : 'Filter Lands'} {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setShowSampleListings(!showSampleListings)}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-neutral-300 text-xs font-medium text-[#17251D] hover:bg-neutral-50"
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-[#124A32]" />
-            <span>{showSampleListings ? 'Sample Listings: ON' : 'Sample Listings: OFF'}</span>
+            <span className="hidden sm:inline">{showSampleListings ? 'Sample Listings: ON' : 'Sample Listings: OFF'}</span>
+            <span className="sm:hidden">{showSampleListings ? 'Samples: ON' : 'Samples: OFF'}</span>
           </button>
 
           <div className="flex items-center gap-1 p-1 bg-neutral-100 rounded-lg">
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
                 viewMode === 'grid'
                   ? 'bg-white text-[#17251D] shadow-sm'
                   : 'text-neutral-600 hover:text-[#17251D]'
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Grid View</span>
+              <span>Grid</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('map')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors ${
                 viewMode === 'map'
                   ? 'bg-white text-[#17251D] shadow-sm'
                   : 'text-neutral-600 hover:text-[#17251D]'
               }`}
             >
               <MapIcon className="w-3.5 h-3.5" />
-              <span>Map View</span>
+              <span>Map</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Multi-Criteria Filter Panel */}
-      <div className="bg-[#F7F9F7] border border-neutral-200 rounded-xl p-5 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Multi-Criteria Filter Panel (Collapsible on Mobile, always accessible) */}
+      <div className={`${filtersOpen ? 'block' : 'hidden'} lg:block bg-[#F7F9F7] border border-neutral-200 rounded-xl p-4 sm:p-5 space-y-4`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div>
             <label className="block text-xs font-medium text-[#17251D] mb-1">
               Keyword / Survey No.

@@ -223,22 +223,22 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-[#F7F9F7] border border-neutral-200 rounded-xl">
+      <div className="flex items-center gap-1.5 p-1.5 bg-[#F7F9F7] border border-neutral-200 rounded-xl overflow-x-auto no-scrollbar">
         {[
           { id: 'lands', label: `Land Management (${allProperties.length})` },
-          { id: 'enquiries', label: `Buyer Enquiries & Assignments (${buyerEnquiries.length})` },
-          { id: 'documents', label: `Document Vault & Reports (${propertyDocuments.length})` },
-          { id: 'registration', label: `Registration Cases (${registrationCases.length})` },
-          { id: 'users', label: `Users & Staff Authorization (${allUsers.length})` },
+          { id: 'enquiries', label: `Buyer Enquiries (${buyerEnquiries.length})` },
+          { id: 'documents', label: `Document Vault (${propertyDocuments.length})` },
+          { id: 'registration', label: `Registration (${registrationCases.length})` },
+          { id: 'users', label: `Staff & Users (${allUsers.length})` },
           { id: 'audit', label: `Audit Logs (${auditLogs.length})` },
         ].map((t) => (
           <button
             key={t.id}
             type="button"
             onClick={() => setActiveTab(t.id as any)}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+            className={`px-3.5 sm:px-4 py-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 min-h-[38px] ${
               activeTab === t.id
-                ? 'bg-[#124A32] text-white'
+                ? 'bg-[#124A32] text-white shadow-xs'
                 : 'text-neutral-600 hover:text-[#17251D]'
             }`}
           >
@@ -250,8 +250,8 @@ export const AdminDashboardPage: React.FC = () => {
       {/* Tab 1: Land Management */}
       {activeTab === 'lands' && (
         <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
-          <div className="p-5 border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="relative flex-1 max-w-md">
+          <div className="p-4 sm:p-5 border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md w-full">
               <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-2.5" />
               <input
                 type="text"
@@ -264,7 +264,7 @@ export const AdminDashboardPage: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 text-xs rounded-lg border border-neutral-300 bg-white"
+              className="px-3 py-2 text-xs rounded-lg border border-neutral-300 bg-white w-full sm:w-auto"
             >
               <option value="All">All Lifecycle Statuses</option>
               {LIFECYCLE_STATUSES.map((st) => (
@@ -275,8 +275,8 @@ export const AdminDashboardPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+          <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+            <table className="w-full min-w-[720px] text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-neutral-200 bg-[#F7F9F7] text-neutral-600">
                   <th className="p-4 font-semibold">Reference ID</th>
@@ -355,8 +355,8 @@ export const AdminDashboardPage: React.FC = () => {
               No buyer enquiries submitted yet.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+              <table className="w-full min-w-[680px] text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-neutral-200 bg-[#F7F9F7] text-neutral-600">
                     <th className="p-4 font-semibold">Enquiry ID</th>
@@ -445,8 +445,8 @@ export const AdminDashboardPage: React.FC = () => {
                 No documents uploaded yet.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
+              <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+                <table className="w-full min-w-[660px] text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-neutral-200 bg-[#F7F9F7] text-neutral-600">
                       <th className="p-4 font-semibold">Doc Type</th>
@@ -559,8 +559,8 @@ export const AdminDashboardPage: React.FC = () => {
               No active registration cases yet.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+              <table className="w-full min-w-[660px] text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-neutral-200 bg-[#F7F9F7] text-neutral-600">
                     <th className="p-4 font-semibold">Case No.</th>
@@ -637,8 +637,8 @@ export const AdminDashboardPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+          <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+            <table className="w-full min-w-[660px] text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-neutral-200 bg-[#F7F9F7] text-neutral-600">
                   <th className="p-4 font-semibold">Full Name</th>
@@ -699,8 +699,8 @@ export const AdminDashboardPage: React.FC = () => {
               No audit events recorded yet.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0">
+              <table className="w-full min-w-[640px] text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-neutral-200 bg-[#F7F9F7] text-neutral-600">
                     <th className="p-4 font-semibold">Timestamp</th>
