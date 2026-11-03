@@ -81,7 +81,7 @@ async function startServer() {
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     const ip = req.ip || 'unknown';
-    if (req.path.startsWith('/api/') && !checkRateLimit(ip, 120, 60_000)) {
+    if (req.path.startsWith('/api/') && !checkRateLimit(ip, 300, 60_000)) {
       res.status(429).json({ error: 'Too many requests. Please try again in a minute.' });
       return;
     }
@@ -95,6 +95,65 @@ async function startServer() {
       platform: 'SLT Culture – Land Screening and Transforming (LST)',
       timestamp: new Date().toISOString(),
     });
+  });
+
+  // Same-origin proxy for Firebase Identity Toolkit & SecureToken APIs
+  // Prevents browser extensions, cross-origin iframe restrictions, or client clock skew from causing auth/internal-error
+  app.post('/api/firebase-auth-proxy', async (req, res) => {
+    try {
+      const { targetUrl, method = 'POST', headers = {}, body } = req.body || {};
+      if (
+        typeof targetUrl !== 'string' ||
+        (!targetUrl.startsWith('https://identitytoolkit.googleapis.com/') &&
+          !targetUrl.startsWith('https://securetoken.googleapis.com/'))
+      ) {
+        res.status(400).json({ error: 'Invalid Firebase Auth target URL.' });
+        return;
+      }
+
+      const forwardHeaders: Record<string, string> = {
+        'Content-Type': headers['Content-Type'] || headers['content-type'] || 'application/json',
+      };
+      for (const [k, v] of Object.entries(headers)) {
+        const lower = k.toLowerCase();
+        if (
+          typeof v === 'string' &&
+          (lower.startsWith('x-client-') ||
+            lower.startsWith('x-firebase-') ||
+            lower.startsWith('x-goog-') ||
+            lower === 'authorization')
+        ) {
+          forwardHeaders[k] = v;
+        }
+      }
+
+      const upstream = await fetch(targetUrl, {
+        method,
+        headers: forwardHeaders,
+        body:
+          method !== 'GET' && method !== 'HEAD' && body !== undefined
+            ? typeof body === 'string'
+              ? body
+              : JSON.stringify(body)
+            : undefined,
+      });
+
+      const responseText = await upstream.text();
+      res.status(upstream.status);
+      const contentType = upstream.headers.get('content-type');
+      if (contentType) {
+        res.setHeader('Content-Type', contentType);
+      }
+      res.send(responseText);
+    } catch (error: any) {
+      console.error('Firebase Auth proxy error:', error);
+      res.status(502).json({
+        error: {
+          code: 502,
+          message: error?.message || 'FIREBASE_AUTH_PROXY_ERROR',
+        },
+      });
+    }
   });
 
   // Protected Document Upload Endpoint

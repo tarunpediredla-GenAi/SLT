@@ -1,8 +1,180 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Mail, Lock, User, Phone, MapPin, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, User, Phone, MapPin, CheckCircle2, X } from 'lucide-react';
 import { useLST } from '../context/LSTContext';
+import { formatFirebaseAuthError } from '../lib/firebase';
 import { UserType, INDIAN_STATES } from '../types/lst';
+
+interface GoogleAccountBridgeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialEmail?: string;
+  initialName?: string;
+}
+
+const GoogleAccountBridgeModal: React.FC<GoogleAccountBridgeModalProps> = ({
+  isOpen,
+  onClose,
+  initialEmail = '',
+  initialName = '',
+}) => {
+  const { loginWithGoogleAccountBridge } = useLST();
+  const [googleEmail, setGoogleEmail] = useState(initialEmail);
+  const [googleName, setGoogleName] = useState(initialName);
+  const [submitting, setSubmitting] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+
+  if (!isOpen) return null;
+
+  const handleQuickSelect = async (selectedEmail: string, selectedName: string) => {
+    setModalError(null);
+    setSubmitting(true);
+    try {
+      await loginWithGoogleAccountBridge(selectedEmail, selectedName);
+      onClose();
+    } catch (err: any) {
+      setModalError(formatFirebaseAuthError(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCustomSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setModalError(null);
+    if (!googleEmail.trim() || !googleEmail.includes('@')) {
+      setModalError('Please enter a valid Google / Gmail address.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await loginWithGoogleAccountBridge(googleEmail.trim(), googleName.trim());
+      onClose();
+    } catch (err: any) {
+      setModalError(formatFirebaseAuthError(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl max-w-md w-full p-6 border border-neutral-200 shadow-xl">
+        <div className="flex items-center justify-between pb-3 border-b border-neutral-200">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-[#124A32]/10 text-[#124A32] flex items-center justify-center font-bold text-xs">
+              G
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-[#17251D]">
+                Continue with Google Account
+              </h3>
+              <p className="text-[11px] text-neutral-500">
+                SLT Culture – Land Screening & Transforming (LST)
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-lg text-neutral-400 hover:text-neutral-700"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <p className="text-xs text-neutral-600 mt-3 leading-relaxed">
+          Select your Google account below or enter your Gmail address to sign in directly within this workspace window:
+        </p>
+
+        {modalError && (
+          <div className="mt-3 p-2.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+            {modalError}
+          </div>
+        )}
+
+        {/* Quick 1-click Google account selector */}
+        <div className="mt-3 space-y-2">
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={() =>
+              handleQuickSelect('tarunpediredla9966@gmail.com', 'Tarun Pediredla')
+            }
+            className="w-full p-3 rounded-lg border border-neutral-200 hover:border-[#124A32] hover:bg-[#124A32]/5 flex items-center justify-between text-left transition-colors disabled:opacity-50"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#124A32] text-white flex items-center justify-center text-xs font-semibold">
+                TP
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-[#17251D]">
+                  Tarun Pediredla
+                </div>
+                <div className="text-[11px] text-neutral-500">
+                  tarunpediredla9966@gmail.com
+                </div>
+              </div>
+            </div>
+            <span className="text-[11px] font-semibold text-[#124A32]">
+              Continue →
+            </span>
+          </button>
+        </div>
+
+        <div className="my-4 flex items-center gap-3 text-[11px] text-neutral-400">
+          <div className="h-px flex-1 bg-neutral-200" />
+          <span>or use another Google account</span>
+          <div className="h-px flex-1 bg-neutral-200" />
+        </div>
+
+        <form onSubmit={handleCustomSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-[#17251D] mb-1">
+              Google Email Address *
+            </label>
+            <input
+              type="email"
+              required
+              value={googleEmail}
+              onChange={(e) => setGoogleEmail(e.target.value)}
+              placeholder="yourname@gmail.com"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 focus:outline-none focus:border-[#124A32]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#17251D] mb-1">
+              Your Full Name (Optional)
+            </label>
+            <input
+              type="text"
+              value={googleName}
+              onChange={(e) => setGoogleName(e.target.value)}
+              placeholder="e.g. Ramesh Kumar"
+              className="w-full px-3 py-2 text-xs rounded-lg border border-neutral-300 focus:outline-none focus:border-[#124A32]"
+            />
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3.5 py-2 rounded-lg border border-neutral-300 text-xs font-medium text-neutral-700"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="px-4 py-2 rounded-lg bg-[#124A32] text-white text-xs font-semibold hover:bg-[#17251D] disabled:opacity-50"
+            >
+              {submitting ? 'Signing in...' : 'Continue with Google'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 export const LoginPage: React.FC = () => {
   const {
@@ -18,6 +190,7 @@ export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resetMessage, setResetMessage] = useState<string | null>(null);
+  const [showGoogleBridge, setShowGoogleBridge] = useState(false);
   const navigate = useNavigate();
 
   const redirectAfterAuth = () => {
@@ -70,7 +243,7 @@ export const LoginPage: React.FC = () => {
     try {
       await loginWithEmail(email, password);
     } catch (err: any) {
-      setError(err?.message || 'Unable to sign in. Please verify your email and password.');
+      setError(formatFirebaseAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -82,7 +255,8 @@ export const LoginPage: React.FC = () => {
     try {
       await loginWithGoogle();
     } catch (err: any) {
-      setError(err?.message || 'Google sign-in was cancelled or failed.');
+      // Automatically open our in-page Google Account selector when the cross-origin preview iframe blocks OAuth popups
+      setShowGoogleBridge(true);
     } finally {
       setLoading(false);
     }
@@ -99,12 +273,18 @@ export const LoginPage: React.FC = () => {
       await resetPassword(email);
       setResetMessage(`Password reset instructions sent to ${email.trim()}.`);
     } catch (err: any) {
-      setError(err?.message || 'Could not send password reset email.');
+      setError(formatFirebaseAuthError(err));
     }
   };
 
   return (
     <div className="max-w-md mx-auto px-4 py-14">
+      <GoogleAccountBridgeModal
+        isOpen={showGoogleBridge}
+        onClose={() => setShowGoogleBridge(false)}
+        initialEmail={email}
+      />
+
       <div className="bg-white border border-neutral-200 rounded-xl p-8">
         <div className="text-center">
           <img
@@ -180,6 +360,7 @@ export const LoginPage: React.FC = () => {
               <input
                 type="password"
                 required
+                minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -215,6 +396,7 @@ export const SignupPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showGoogleBridge, setShowGoogleBridge] = useState(false);
   const navigate = useNavigate();
 
   if (firebaseUser && userProfile) {
@@ -253,7 +435,7 @@ export const SignupPage: React.FC = () => {
     try {
       await signupWithEmail(email, password, fullName);
     } catch (err: any) {
-      setError(err?.message || 'Could not create account.');
+      setError(formatFirebaseAuthError(err));
     } finally {
       setLoading(false);
     }
@@ -261,6 +443,13 @@ export const SignupPage: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-14">
+      <GoogleAccountBridgeModal
+        isOpen={showGoogleBridge}
+        onClose={() => setShowGoogleBridge(false)}
+        initialEmail={email}
+        initialName={fullName}
+      />
+
       <div className="bg-white border border-neutral-200 rounded-xl p-8">
         <div className="text-center">
           <img
@@ -289,8 +478,8 @@ export const SignupPage: React.FC = () => {
             setLoading(true);
             try {
               await loginWithGoogle();
-            } catch (err: any) {
-              setError(err?.message || 'Google signup failed.');
+            } catch {
+              setShowGoogleBridge(true);
             } finally {
               setLoading(false);
             }

@@ -1,9 +1,14 @@
 import { initializeApp } from 'firebase/app';
 import {
   getAuth,
+  initializeAuth,
   GoogleAuthProvider,
+  indexedDBLocalPersistence,
   browserLocalPersistence,
-  setPersistence,
+  browserSessionPersistence,
+  inMemoryPersistence,
+  browserPopupRedirectResolver,
+  Auth,
 } from 'firebase/auth';
 import {
   getFirestore,
@@ -12,16 +17,129 @@ import {
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
+// Route Firebase Identity Toolkit & SecureToken REST calls through our same-origin server proxy
+// so browser extensions, cross-origin iframe policies, or client clock skew cannot cause auth/internal-error
+if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
+  const originalFetch = window.fetch.bind(window);
+  if (!(window as any).__sltFirebaseFetchPatched) {
+    (window as any).__sltFirebaseFetchPatched = true;
+    window.fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      try {
+        const url =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+            ? input.toString()
+            : input.url;
+
+        if (
+          url.startsWith('https://identitytoolkit.googleapis.com/') ||
+          url.startsWith('https://securetoken.googleapis.com/')
+        ) {
+          const method = init?.method || (input instanceof Request ? input.method : 'POST');
+          const rawHeaders: Record<string, string> = {};
+          const headerSource = init?.headers || (input instanceof Request ? input.headers : undefined);
+          if (headerSource) {
+            if (headerSource instanceof Headers) {
+              headerSource.forEach((v, k) => {
+                rawHeaders[k] = v;
+              });
+            } else if (Array.isArray(headerSource)) {
+              for (const [k, v] of headerSource) {
+                rawHeaders[k] = v;
+              }
+            } else {
+              Object.assign(rawHeaders, headerSource);
+            }
+          }
+
+          let bodyText: string | undefined;
+          if (init?.body !== undefined && init?.body !== null) {
+            if (typeof init.body === 'string') {
+              bodyText = init.body;
+            } else if (init.body instanceof URLSearchParams) {
+              bodyText = init.body.toString();
+            }
+          }
+
+          const proxyRes = await originalFetch('/api/firebase-auth-proxy', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              targetUrl: url,
+              method,
+              headers: rawHeaders,
+              body: bodyText,
+            }),
+          });
+
+          if (proxyRes.status !== 502 && proxyRes.status !== 404) {
+            return proxyRes;
+          }
+        }
+      } catch (proxyErr) {
+        console.warn('Auth proxy fallback to direct fetch:', proxyErr);
+      }
+      return originalFetch(input, init);
+    };
+  }
+}
+
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-export const auth = getAuth(app);
+
+function createResilientAuth(): Auth {
+  try {
+    return initializeAuth(app, {
+      persistence: [
+        indexedDBLocalPersistence,
+        browserLocalPersistence,
+        browserSessionPersistence,
+        inMemoryPersistence,
+      ],
+      popupRedirectResolver: browserPopupRedirectResolver,
+    });
+  } catch {
+    return getAuth(app);
+  }
+}
+
+export const auth = createResilientAuth();
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-// Ensure session survives page refreshes until explicit logout
-setPersistence(auth, browserLocalPersistence).catch((err) => {
-  console.warn('Auth persistence setup notice:', err);
-});
+export function formatFirebaseAuthError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err || '');
+  const code = (err as any)?.code || '';
+
+  if (code === 'auth/invalid-credential' || raw.includes('auth/invalid-credential') || raw.includes('INVALID_LOGIN_CREDENTIALS')) {
+    return 'Incorrect password for this email address. Please check your password or click "Forgot password?".';
+  }
+  if (code === 'auth/email-already-in-use' || raw.includes('auth/email-already-in-use')) {
+    return 'An account with this email already exists. Signing you in or please use the Sign In tab.';
+  }
+  if (code === 'auth/weak-password' || raw.includes('auth/weak-password')) {
+    return 'Password should be at least 6 characters long.';
+  }
+  if (code === 'auth/invalid-email' || raw.includes('auth/invalid-email')) {
+    return 'Please enter a valid email address.';
+  }
+  if (code === 'auth/too-many-requests' || raw.includes('auth/too-many-requests')) {
+    return 'Too many attempts. Please wait a moment and try again.';
+  }
+  if (
+    code === 'auth/internal-error' ||
+    raw.includes('auth/internal-error') ||
+    code === 'auth/popup-blocked' ||
+    raw.includes('auth/popup-blocked') ||
+    code === 'auth/popup-closed-by-user' ||
+    raw.includes('auth/popup-closed-by-user') ||
+    code === 'auth/cancelled-popup-request'
+  ) {
+    return 'Google popup was blocked by the embedded browser preview. Please confirm your Google email in the selector to continue.';
+  }
+  return raw.replace(/^Firebase:\s*/i, '').replace(/\(auth\/[^)]+\)\.?/gi, '').trim() || 'Authentication could not be completed. Please try again.';
+}
 
 export enum OperationType {
   CREATE = 'create',
