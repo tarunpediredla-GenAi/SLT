@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#0F291E"/>
+  <!-- Highway Corridor -->
+  <polygon points="0,420 800,260 800,350 0,540" fill="#334155"/>
+  <line x1="0" y1="480" x2="800" y2="305" stroke="#D5AD51" stroke-width="3" stroke-dasharray="16 12"/>
+  <!-- Commercial Plot Zone -->
+  <polygon points="140,180 620,110 700,245 190,355" fill="#D5AD51" fill-opacity="0.2" stroke="#D5AD51" stroke-width="2.5"/>
+  <rect x="28" y="28" width="250" height="40" rx="6" fill="#17251D" fill-opacity="0.88"/>
+  <text x="44" y="53" fill="#D5AD51" font-family="monospace" font-size="13" font-weight="600">COMMERCIAL · NH FRONTAGE</text>
+</svg>

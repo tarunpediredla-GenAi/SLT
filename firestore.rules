@@ -1,0 +1,588 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isBootstrapAdmin() {
+      return isSignedIn()
+        && request.auth.token.email == "tarunpediredla9966@gmail.com"
+        && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isBootstrapAdmin()
+        || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)))
+        || (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    function isAgent() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'agent'
+            || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    function isValidTimestamp(val) {
+      return val is timestamp || (val is string && val.size() >= 10 && val.size() <= 64);
+    }
+
+    // Connection test endpoint
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // Admins lookup collection
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if isBootstrapAdmin();
+      allow create, update, delete: if isAdmin() && isValidId(adminId);
+    }
+
+    // 3. Entity Validation Blueprints
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'fullName', 'email', 'phone', 'userType', 'role', 'verificationStatus', 'accountStatus', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'fullName', 'email', 'phone', 'altPhone', 'address', 'city', 'state', 'pinCode', 'userType', 'role', 'verificationStatus', 'accountStatus', 'privacyConsent', 'createdAt', 'updatedAt'])
+        && data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128
+        && data.fullName is string && data.fullName.size() >= 1 && data.fullName.size() <= 120
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 160
+        && data.phone is string && data.phone.size() <= 24
+        && (!('altPhone' in data) || (data.altPhone is string && data.altPhone.size() <= 24))
+        && (!('address' in data) || (data.address is string && data.address.size() <= 300))
+        && (!('city' in data) || (data.city is string && data.city.size() <= 80))
+        && (!('state' in data) || (data.state is string && data.state.size() <= 80))
+        && (!('pinCode' in data) || (data.pinCode is string && data.pinCode.size() <= 12))
+        && data.userType in ['buyer', 'seller', 'both']
+        && data.role in ['user', 'agent', 'admin']
+        && data.verificationStatus in ['unverified', 'pending', 'verified']
+        && data.accountStatus in ['active', 'suspended']
+        && (!('privacyConsent' in data) || data.privacyConsent is bool)
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin() || isAgent());
+      allow list: if isBootstrapAdmin() || (isSignedIn() && (resource.data.uid == request.auth.uid || resource.data.role == 'agent'));
+      allow create: if isSignedIn()
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && incoming().uid == userId
+        && (
+          (isOwner(userId) && (incoming().role == 'user' || (isBootstrapAdmin() && incoming().role == 'admin')))
+          || isAdmin()
+        );
+      allow update: if isSignedIn()
+        && isValidId(userId)
+        && isValidUser(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && (
+          (isOwner(userId)
+            && incoming().role == existing().role
+            && incoming().accountStatus == existing().accountStatus
+            && incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'phone', 'altPhone', 'address', 'city', 'state', 'pinCode', 'userType', 'verificationStatus', 'privacyConsent', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isAdmin() && isValidId(userId);
+    }
+
+    function isValidProperty(data) {
+      return data.keys().hasAll(['id', 'referenceId', 'sellerId', 'title', 'category', 'state', 'district', 'village', 'surveyNumber', 'area', 'areaUnit', 'priceInr', 'isNegotiable', 'status', 'screeningStage', 'isPublished', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'referenceId', 'sellerId', 'sellerName', 'title', 'category', 'state', 'district', 'mandal', 'village', 'surveyNumber', 'plotNumber', 'area', 'areaUnit', 'priceInr', 'isNegotiable', 'description', 'latitude', 'longitude', 'locationAddress', 'roadAccess', 'waterAvailability', 'electricityAvailability', 'currentLandUse', 'ownershipDetails', 'images', 'status', 'screeningStage', 'screeningStatus', 'testingStatus', 'agentVisitStatus', 'registrationAssistanceStatus', 'assignedAgentId', 'assignedAgentName', 'rejectionReason', 'publicScreeningSummary', 'isFlagged', 'isPublished', 'isSample', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.referenceId is string && data.referenceId.size() >= 3 && data.referenceId.size() <= 40
+        && data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128
+        && (!('sellerName' in data) || (data.sellerName is string && data.sellerName.size() <= 120))
+        && data.title is string && data.title.size() >= 3 && data.title.size() <= 160
+        && data.category in ['Agricultural', 'Residential', 'Commercial', 'Industrial']
+        && data.state is string && data.state.size() >= 2 && data.state.size() <= 80
+        && data.district is string && data.district.size() >= 2 && data.district.size() <= 80
+        && (!('mandal' in data) || (data.mandal is string && data.mandal.size() <= 80))
+        && data.village is string && data.village.size() >= 1 && data.village.size() <= 100
+        && data.surveyNumber is string && data.surveyNumber.size() >= 1 && data.surveyNumber.size() <= 60
+        && (!('plotNumber' in data) || (data.plotNumber is string && data.plotNumber.size() <= 60))
+        && data.area is number && data.area > 0
+        && data.areaUnit in ['Acres', 'Cents', 'Sq. Ft.', 'Sq. Yards']
+        && data.priceInr is number && data.priceInr > 0
+        && data.isNegotiable is bool
+        && (!('description' in data) || (data.description is string && data.description.size() <= 2000))
+        && (!('latitude' in data) || data.latitude is number)
+        && (!('longitude' in data) || data.longitude is number)
+        && (!('locationAddress' in data) || (data.locationAddress is string && data.locationAddress.size() <= 300))
+        && (!('roadAccess' in data) || (data.roadAccess is string && data.roadAccess.size() <= 120))
+        && (!('waterAvailability' in data) || (data.waterAvailability is string && data.waterAvailability.size() <= 120))
+        && (!('electricityAvailability' in data) || (data.electricityAvailability is string && data.electricityAvailability.size() <= 120))
+        && (!('currentLandUse' in data) || (data.currentLandUse is string && data.currentLandUse.size() <= 120))
+        && (!('ownershipDetails' in data) || (data.ownershipDetails is string && data.ownershipDetails.size() <= 500))
+        && (!('images' in data) || (data.images is list && data.images.size() <= 10 && (data.images.size() == 0 || (data.images[0] is string && data.images[0].size() <= 500))))
+        && data.status in ['Submitted', 'Under Review', 'Visit Scheduled', 'Inspection Complete', 'Documents Pending', 'Approved', 'Rejected', 'Listed', 'Negotiation', 'Registration in Progress', 'Closed']
+        && data.screeningStage is number && data.screeningStage >= 1 && data.screeningStage <= 10
+        && (!('screeningStatus' in data) || (data.screeningStatus is string && data.screeningStatus.size() <= 80))
+        && (!('testingStatus' in data) || (data.testingStatus is string && data.testingStatus.size() <= 80))
+        && (!('agentVisitStatus' in data) || (data.agentVisitStatus is string && data.agentVisitStatus.size() <= 80))
+        && (!('registrationAssistanceStatus' in data) || (data.registrationAssistanceStatus is string && data.registrationAssistanceStatus.size() <= 80))
+        && (!('assignedAgentId' in data) || (data.assignedAgentId is string && data.assignedAgentId.size() <= 128))
+        && (!('assignedAgentName' in data) || (data.assignedAgentName is string && data.assignedAgentName.size() <= 120))
+        && (!('rejectionReason' in data) || (data.rejectionReason is string && data.rejectionReason.size() <= 500))
+        && (!('publicScreeningSummary' in data) || (data.publicScreeningSummary is string && data.publicScreeningSummary.size() <= 1000))
+        && (!('isFlagged' in data) || data.isFlagged is bool)
+        && data.isPublished is bool
+        && (!('isSample' in data) || data.isSample is bool)
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /properties/{propertyId} {
+      allow get: if isValidId(propertyId)
+        && (existing().isPublished == true
+            || (isSignedIn() && (existing().sellerId == request.auth.uid || existing().assignedAgentId == request.auth.uid || isAdmin())));
+      allow list: if resource.data.isPublished == true
+        || isBootstrapAdmin()
+        || (isSignedIn() && (resource.data.sellerId == request.auth.uid || resource.data.assignedAgentId == request.auth.uid));
+      allow create: if isSignedIn()
+        && isValidId(propertyId)
+        && isValidProperty(incoming())
+        && incoming().id == propertyId
+        && (
+          (incoming().sellerId == request.auth.uid && incoming().isPublished == false && incoming().status == 'Submitted')
+          || isAdmin()
+        );
+      allow update: if isSignedIn()
+        && isValidId(propertyId)
+        && isValidProperty(incoming())
+        && incoming().id == existing().id
+        && incoming().sellerId == existing().sellerId
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().sellerId == request.auth.uid
+            && existing().status != 'Closed'
+            && incoming().isPublished == existing().isPublished
+            && incoming().status == existing().status
+            && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'priceInr', 'isNegotiable', 'description', 'roadAccess', 'waterAvailability', 'electricityAvailability', 'currentLandUse', 'images', 'agentVisitStatus', 'updatedAt']))
+          || (existing().assignedAgentId == request.auth.uid
+            && incoming().isPublished == existing().isPublished
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'screeningStage', 'screeningStatus', 'testingStatus', 'agentVisitStatus', 'publicScreeningSummary', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isAdmin() && isValidId(propertyId);
+    }
+
+    function isValidPropertyDocument(data) {
+      return data.keys().hasAll(['id', 'propertyId', 'sellerId', 'docType', 'fileName', 'fileUrl', 'verificationStatus', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'propertyId', 'sellerId', 'assignedAgentId', 'docType', 'fileName', 'fileUrl', 'fileSize', 'mimeType', 'verificationStatus', 'reviewerNotes', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 128
+        && data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128
+        && (!('assignedAgentId' in data) || (data.assignedAgentId is string && data.assignedAgentId.size() <= 128))
+        && data.docType in ['ownership', 'sale_deed', 'ec', 'tax_record', 'survey', 'soil_report', 'land_photo']
+        && data.fileName is string && data.fileName.size() >= 1 && data.fileName.size() <= 200
+        && data.fileUrl is string && data.fileUrl.size() >= 1 && data.fileUrl.size() <= 500
+        && (!('fileSize' in data) || data.fileSize is number)
+        && (!('mimeType' in data) || (data.mimeType is string && data.mimeType.size() <= 100))
+        && data.verificationStatus in ['pending', 'verified', 'rejected']
+        && (!('reviewerNotes' in data) || (data.reviewerNotes is string && data.reviewerNotes.size() <= 500))
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /propertyDocuments/{docId} {
+      allow get: if isSignedIn() && isValidId(docId)
+        && (existing().sellerId == request.auth.uid || existing().assignedAgentId == request.auth.uid || isAdmin());
+      allow list: if isBootstrapAdmin()
+        || (isSignedIn() && (resource.data.sellerId == request.auth.uid || resource.data.assignedAgentId == request.auth.uid));
+      allow create: if isSignedIn()
+        && isValidId(docId)
+        && isValidPropertyDocument(incoming())
+        && incoming().id == docId
+        && (incoming().sellerId == request.auth.uid || isAdmin() || isAgent());
+      allow update: if isSignedIn()
+        && isValidId(docId)
+        && isValidPropertyDocument(incoming())
+        && incoming().id == existing().id
+        && incoming().sellerId == existing().sellerId
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().assignedAgentId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['verificationStatus', 'reviewerNotes', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isValidId(docId) && (isOwner(existing().sellerId) || isAdmin());
+    }
+
+    function isValidScreeningReport(data) {
+      return data.keys().hasAll(['id', 'propertyId', 'sellerId', 'agentId', 'agentName', 'boundariesVerified', 'roadAccessVerified', 'waterVerified', 'electricityVerified', 'recommendation', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'propertyId', 'sellerId', 'agentId', 'agentName', 'boundariesVerified', 'roadAccessVerified', 'waterVerified', 'electricityVerified', 'ownershipRecordsChecked', 'soilTestingCompleted', 'soilQualitySummary', 'inspectionNotes', 'recommendation', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 128
+        && data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128
+        && data.agentId is string && data.agentId.size() >= 1 && data.agentId.size() <= 128
+        && data.agentName is string && data.agentName.size() >= 1 && data.agentName.size() <= 120
+        && data.boundariesVerified is bool
+        && data.roadAccessVerified is bool
+        && data.waterVerified is bool
+        && data.electricityVerified is bool
+        && (!('ownershipRecordsChecked' in data) || data.ownershipRecordsChecked is bool)
+        && (!('soilTestingCompleted' in data) || data.soilTestingCompleted is bool)
+        && (!('soilQualitySummary' in data) || (data.soilQualitySummary is string && data.soilQualitySummary.size() <= 1000))
+        && (!('inspectionNotes' in data) || (data.inspectionNotes is string && data.inspectionNotes.size() <= 2000))
+        && data.recommendation in ['Approve', 'Reject', 'Further Verification Required']
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /screeningReports/{reportId} {
+      allow get: if isSignedIn() && isValidId(reportId)
+        && (existing().agentId == request.auth.uid || existing().sellerId == request.auth.uid || isAdmin());
+      allow list: if isBootstrapAdmin()
+        || (isSignedIn() && (resource.data.agentId == request.auth.uid || resource.data.sellerId == request.auth.uid));
+      allow create: if isSignedIn()
+        && isValidId(reportId)
+        && isValidScreeningReport(incoming())
+        && incoming().id == reportId
+        && (incoming().agentId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn()
+        && isValidId(reportId)
+        && isValidScreeningReport(incoming())
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().agentId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['boundariesVerified', 'roadAccessVerified', 'waterVerified', 'electricityVerified', 'ownershipRecordsChecked', 'soilTestingCompleted', 'soilQualitySummary', 'inspectionNotes', 'recommendation', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isAdmin() && isValidId(reportId);
+    }
+
+    function isValidInspectionRequest(data) {
+      return data.keys().hasAll(['id', 'propertyId', 'referenceId', 'propertyTitle', 'sellerId', 'sellerName', 'sellerPhone', 'preferredDate', 'status', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'propertyId', 'referenceId', 'propertyTitle', 'sellerId', 'sellerName', 'sellerPhone', 'preferredDate', 'preferredSlot', 'notes', 'assignedAgentId', 'assignedAgentName', 'status', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 128
+        && data.referenceId is string && data.referenceId.size() <= 40
+        && data.propertyTitle is string && data.propertyTitle.size() <= 160
+        && data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128
+        && data.sellerName is string && data.sellerName.size() <= 120
+        && data.sellerPhone is string && data.sellerPhone.size() <= 24
+        && data.preferredDate is string && data.preferredDate.size() <= 40
+        && (!('preferredSlot' in data) || (data.preferredSlot is string && data.preferredSlot.size() <= 60))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 500))
+        && (!('assignedAgentId' in data) || (data.assignedAgentId is string && data.assignedAgentId.size() <= 128))
+        && (!('assignedAgentName' in data) || (data.assignedAgentName is string && data.assignedAgentName.size() <= 120))
+        && data.status in ['Assigned', 'Contacted', 'Visit Scheduled', 'Inspection Started', 'Inspection Completed', 'Report Submitted', 'Pending Assignment']
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /inspectionRequests/{requestId} {
+      allow get: if isSignedIn() && isValidId(requestId)
+        && (existing().sellerId == request.auth.uid || existing().assignedAgentId == request.auth.uid || isAdmin());
+      allow list: if isBootstrapAdmin()
+        || (isSignedIn() && (resource.data.sellerId == request.auth.uid || resource.data.assignedAgentId == request.auth.uid));
+      allow create: if isSignedIn()
+        && isValidId(requestId)
+        && isValidInspectionRequest(incoming())
+        && incoming().id == requestId
+        && (incoming().sellerId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn()
+        && isValidId(requestId)
+        && isValidInspectionRequest(incoming())
+        && incoming().id == existing().id
+        && incoming().sellerId == existing().sellerId
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().assignedAgentId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'notes', 'preferredDate', 'preferredSlot', 'updatedAt']))
+          || (existing().sellerId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['preferredDate', 'preferredSlot', 'notes', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isAdmin() && isValidId(requestId);
+    }
+
+    function isValidBuyerEnquiry(data) {
+      return data.keys().hasAll(['id', 'enquiryId', 'propertyId', 'propertyTitle', 'sellerId', 'buyerId', 'buyerName', 'buyerEmail', 'buyerPhone', 'enquiryType', 'status', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'enquiryId', 'propertyId', 'propertyTitle', 'propertyReferenceId', 'sellerId', 'buyerId', 'buyerName', 'buyerEmail', 'buyerPhone', 'buyerCity', 'enquiryType', 'preferredVisitDate', 'message', 'assignedAgentId', 'assignedAgentName', 'assignedAgentPhone', 'status', 'followUpNotes', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.enquiryId is string && data.enquiryId.size() <= 40
+        && data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 128
+        && data.propertyTitle is string && data.propertyTitle.size() <= 160
+        && (!('propertyReferenceId' in data) || (data.propertyReferenceId is string && data.propertyReferenceId.size() <= 40))
+        && data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128
+        && data.buyerId is string && data.buyerId.size() >= 1 && data.buyerId.size() <= 128
+        && data.buyerName is string && data.buyerName.size() >= 1 && data.buyerName.size() <= 120
+        && data.buyerEmail is string && data.buyerEmail.size() >= 3 && data.buyerEmail.size() <= 160
+        && data.buyerPhone is string && data.buyerPhone.size() >= 5 && data.buyerPhone.size() <= 24
+        && (!('buyerCity' in data) || (data.buyerCity is string && data.buyerCity.size() <= 80))
+        && data.enquiryType in ['Register Interest', 'Request Callback', 'Request Site Visit']
+        && (!('preferredVisitDate' in data) || (data.preferredVisitDate is string && data.preferredVisitDate.size() <= 40))
+        && (!('message' in data) || (data.message is string && data.message.size() <= 1000))
+        && (!('assignedAgentId' in data) || (data.assignedAgentId is string && data.assignedAgentId.size() <= 128))
+        && (!('assignedAgentName' in data) || (data.assignedAgentName is string && data.assignedAgentName.size() <= 120))
+        && (!('assignedAgentPhone' in data) || (data.assignedAgentPhone is string && data.assignedAgentPhone.size() <= 24))
+        && data.status in ['Submitted', 'Assigned', 'Contacted', 'Visit Scheduled', 'Inspection Started', 'Inspection Completed', 'Report Submitted', 'Negotiation', 'Registration in Progress', 'Closed']
+        && (!('followUpNotes' in data) || (data.followUpNotes is string && data.followUpNotes.size() <= 1000))
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /buyerEnquiries/{enquiryId} {
+      allow get: if isSignedIn() && isValidId(enquiryId)
+        && (existing().buyerId == request.auth.uid || existing().sellerId == request.auth.uid || existing().assignedAgentId == request.auth.uid || isAdmin());
+      allow list: if isBootstrapAdmin()
+        || (isSignedIn() && (resource.data.buyerId == request.auth.uid || resource.data.sellerId == request.auth.uid || resource.data.assignedAgentId == request.auth.uid));
+      allow create: if isSignedIn()
+        && isValidId(enquiryId)
+        && isValidBuyerEnquiry(incoming())
+        && incoming().id == enquiryId
+        && (incoming().buyerId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn()
+        && isValidId(enquiryId)
+        && isValidBuyerEnquiry(incoming())
+        && incoming().id == existing().id
+        && incoming().buyerId == existing().buyerId
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().assignedAgentId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'followUpNotes', 'preferredVisitDate', 'updatedAt']))
+          || (existing().buyerId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['preferredVisitDate', 'message', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isAdmin() && isValidId(enquiryId);
+    }
+
+    function isValidSavedProperty(data) {
+      return data.keys().hasAll(['id', 'userId', 'propertyId', 'createdAt'])
+        && data.keys().hasOnly(['id', 'userId', 'propertyId', 'createdAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128
+        && data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 128
+        && isValidTimestamp(data.createdAt);
+    }
+
+    match /savedProperties/{savedId} {
+      allow get: if isSignedIn() && isValidId(savedId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isBootstrapAdmin());
+      allow create: if isSignedIn()
+        && isValidId(savedId)
+        && isValidSavedProperty(incoming())
+        && incoming().id == savedId
+        && incoming().userId == request.auth.uid;
+      allow delete: if isSignedIn() && isValidId(savedId) && (existing().userId == request.auth.uid || isAdmin());
+    }
+
+    function isValidAgentAssignment(data) {
+      return data.keys().hasAll(['id', 'agentId', 'agentName', 'assignmentType', 'propertyId', 'propertyTitle', 'status', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'agentId', 'agentName', 'assignmentType', 'propertyId', 'propertyTitle', 'relatedRecordId', 'contactName', 'contactPhone', 'status', 'notes', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.agentId is string && data.agentId.size() >= 1 && data.agentId.size() <= 128
+        && data.agentName is string && data.agentName.size() <= 120
+        && data.assignmentType in ['Property Inspection', 'Buyer Enquiry']
+        && data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 128
+        && data.propertyTitle is string && data.propertyTitle.size() <= 160
+        && (!('relatedRecordId' in data) || (data.relatedRecordId is string && data.relatedRecordId.size() <= 128))
+        && (!('contactName' in data) || (data.contactName is string && data.contactName.size() <= 120))
+        && (!('contactPhone' in data) || (data.contactPhone is string && data.contactPhone.size() <= 24))
+        && data.status in ['Assigned', 'Contacted', 'Visit Scheduled', 'Inspection Started', 'Inspection Completed', 'Report Submitted']
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000))
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /agentAssignments/{assignmentId} {
+      allow get: if isSignedIn() && isValidId(assignmentId)
+        && (existing().agentId == request.auth.uid || isAdmin());
+      allow list: if isBootstrapAdmin()
+        || (isSignedIn() && resource.data.agentId == request.auth.uid);
+      allow create: if isAdmin() && isValidId(assignmentId) && isValidAgentAssignment(incoming()) && incoming().id == assignmentId;
+      allow update: if isSignedIn()
+        && isValidId(assignmentId)
+        && isValidAgentAssignment(incoming())
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().agentId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'notes', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isAdmin() && isValidId(assignmentId);
+    }
+
+    function isValidAppointment(data) {
+      return data.keys().hasAll(['id', 'propertyId', 'propertyTitle', 'agentId', 'agentName', 'participantId', 'participantName', 'participantRole', 'visitDate', 'visitTime', 'status', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'propertyId', 'propertyTitle', 'agentId', 'agentName', 'participantId', 'participantName', 'participantPhone', 'participantRole', 'visitDate', 'visitTime', 'meetingPoint', 'status', 'notes', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 128
+        && data.propertyTitle is string && data.propertyTitle.size() <= 160
+        && data.agentId is string && data.agentId.size() >= 1 && data.agentId.size() <= 128
+        && data.agentName is string && data.agentName.size() <= 120
+        && data.participantId is string && data.participantId.size() >= 1 && data.participantId.size() <= 128
+        && data.participantName is string && data.participantName.size() <= 120
+        && (!('participantPhone' in data) || (data.participantPhone is string && data.participantPhone.size() <= 24))
+        && data.participantRole in ['buyer', 'seller']
+        && data.visitDate is string && data.visitDate.size() <= 40
+        && data.visitTime is string && data.visitTime.size() <= 40
+        && (!('meetingPoint' in data) || (data.meetingPoint is string && data.meetingPoint.size() <= 200))
+        && data.status in ['Visit Scheduled', 'Completed', 'Rescheduled', 'Cancelled']
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 500))
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /appointments/{appointmentId} {
+      allow get: if isSignedIn() && isValidId(appointmentId)
+        && (existing().agentId == request.auth.uid || existing().participantId == request.auth.uid || isAdmin());
+      allow list: if isBootstrapAdmin()
+        || (isSignedIn() && (resource.data.agentId == request.auth.uid || resource.data.participantId == request.auth.uid));
+      allow create: if isSignedIn()
+        && isValidId(appointmentId)
+        && isValidAppointment(incoming())
+        && incoming().id == appointmentId
+        && (incoming().agentId == request.auth.uid || incoming().participantId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn()
+        && isValidId(appointmentId)
+        && isValidAppointment(incoming())
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt
+        && (
+          ((existing().agentId == request.auth.uid || existing().participantId == request.auth.uid)
+            && incoming().diff(existing()).affectedKeys().hasOnly(['visitDate', 'visitTime', 'meetingPoint', 'status', 'notes', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isAdmin() && isValidId(appointmentId);
+    }
+
+    function isValidRegistrationCase(data) {
+      return data.keys().hasAll(['id', 'caseNumber', 'propertyId', 'propertyTitle', 'sellerId', 'sellerName', 'currentStage', 'status', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'caseNumber', 'propertyId', 'propertyTitle', 'sellerId', 'sellerName', 'buyerId', 'buyerName', 'assignedAgentId', 'assignedAgentName', 'currentStage', 'status', 'subRegistrarOffice', 'appointmentDate', 'coordinationNotes', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.caseNumber is string && data.caseNumber.size() <= 40
+        && data.propertyId is string && data.propertyId.size() >= 1 && data.propertyId.size() <= 128
+        && data.propertyTitle is string && data.propertyTitle.size() <= 160
+        && data.sellerId is string && data.sellerId.size() >= 1 && data.sellerId.size() <= 128
+        && data.sellerName is string && data.sellerName.size() <= 120
+        && (!('buyerId' in data) || (data.buyerId is string && data.buyerId.size() <= 128))
+        && (!('buyerName' in data) || (data.buyerName is string && data.buyerName.size() <= 120))
+        && (!('assignedAgentId' in data) || (data.assignedAgentId is string && data.assignedAgentId.size() <= 128))
+        && (!('assignedAgentName' in data) || (data.assignedAgentName is string && data.assignedAgentName.size() <= 120))
+        && data.currentStage is number && data.currentStage >= 1 && data.currentStage <= 10
+        && data.status in ['Submitted', 'Under Review', 'Visit Scheduled', 'Inspection Complete', 'Documents Pending', 'Approved', 'Rejected', 'Listed', 'Negotiation', 'Registration in Progress', 'Closed']
+        && (!('subRegistrarOffice' in data) || (data.subRegistrarOffice is string && data.subRegistrarOffice.size() <= 160))
+        && (!('appointmentDate' in data) || (data.appointmentDate is string && data.appointmentDate.size() <= 40))
+        && (!('coordinationNotes' in data) || (data.coordinationNotes is string && data.coordinationNotes.size() <= 1000))
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /registrationCases/{caseId} {
+      allow get: if isSignedIn() && isValidId(caseId)
+        && (existing().sellerId == request.auth.uid || existing().buyerId == request.auth.uid || existing().assignedAgentId == request.auth.uid || isAdmin());
+      allow list: if isBootstrapAdmin()
+        || (isSignedIn() && (resource.data.sellerId == request.auth.uid || resource.data.buyerId == request.auth.uid || resource.data.assignedAgentId == request.auth.uid));
+      allow create: if isSignedIn()
+        && isValidId(caseId)
+        && isValidRegistrationCase(incoming())
+        && incoming().id == caseId
+        && (incoming().sellerId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn()
+        && isValidId(caseId)
+        && isValidRegistrationCase(incoming())
+        && incoming().id == existing().id
+        && incoming().sellerId == existing().sellerId
+        && incoming().createdAt == existing().createdAt
+        && (
+          (existing().assignedAgentId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly(['currentStage', 'status', 'subRegistrarOffice', 'appointmentDate', 'coordinationNotes', 'updatedAt']))
+          || isAdmin()
+        );
+      allow delete: if isAdmin() && isValidId(caseId);
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['id', 'recipientId', 'senderId', 'title', 'message', 'category', 'isRead', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['id', 'recipientId', 'senderId', 'title', 'message', 'category', 'link', 'isRead', 'createdAt', 'updatedAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.recipientId is string && data.recipientId.size() >= 1 && data.recipientId.size() <= 128
+        && data.senderId is string && data.senderId.size() >= 1 && data.senderId.size() <= 128
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 160
+        && data.message is string && data.message.size() >= 1 && data.message.size() <= 500
+        && data.category in ['submission', 'approval', 'enquiry', 'assignment', 'appointment', 'registration']
+        && (!('link' in data) || (data.link is string && data.link.size() <= 200))
+        && data.isRead is bool
+        && isValidTimestamp(data.createdAt)
+        && isValidTimestamp(data.updatedAt);
+    }
+
+    match /notifications/{notificationId} {
+      allow get: if isSignedIn() && isValidId(notificationId)
+        && (existing().recipientId == request.auth.uid || (existing().recipientId == 'admin_broadcast' && isAdmin()));
+      allow list: if isBootstrapAdmin()
+        || (isSignedIn() && (resource.data.recipientId == request.auth.uid || resource.data.recipientId == 'admin_broadcast'));
+      allow create: if isSignedIn()
+        && isValidId(notificationId)
+        && isValidNotification(incoming())
+        && incoming().id == notificationId
+        && incoming().senderId == request.auth.uid;
+      allow update: if isSignedIn()
+        && isValidId(notificationId)
+        && isValidNotification(incoming())
+        && incoming().id == existing().id
+        && incoming().recipientId == existing().recipientId
+        && incoming().senderId == existing().senderId
+        && incoming().createdAt == existing().createdAt
+        && (existing().recipientId == request.auth.uid || isAdmin())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['isRead', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(notificationId) && (existing().recipientId == request.auth.uid || isAdmin());
+    }
+
+    function isValidAuditLog(data) {
+      return data.keys().hasAll(['id', 'actorId', 'actorEmail', 'actorRole', 'action', 'targetCollection', 'targetId', 'details', 'createdAt'])
+        && data.keys().hasOnly(['id', 'actorId', 'actorEmail', 'actorRole', 'action', 'targetCollection', 'targetId', 'details', 'createdAt'])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 128
+        && data.actorId is string && data.actorId.size() >= 1 && data.actorId.size() <= 128
+        && data.actorEmail is string && data.actorEmail.size() >= 3 && data.actorEmail.size() <= 160
+        && data.actorRole is string && data.actorRole.size() <= 40
+        && data.action is string && data.action.size() >= 1 && data.action.size() <= 160
+        && data.targetCollection is string && data.targetCollection.size() <= 80
+        && data.targetId is string && data.targetId.size() <= 128
+        && data.details is string && data.details.size() <= 1000
+        && isValidTimestamp(data.createdAt);
+    }
+
+    match /auditLogs/{logId} {
+      allow get: if isAdmin() && isValidId(logId);
+      allow list: if isBootstrapAdmin() || (isSignedIn() && resource.data.actorId == request.auth.uid);
+      allow create: if isSignedIn()
+        && isValidId(logId)
+        && isValidAuditLog(incoming())
+        && incoming().id == logId
+        && incoming().actorId == request.auth.uid;
+      allow update, delete: if false;
+    }
+  }
+}

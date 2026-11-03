@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" fill="none">
+  <rect width="800" height="600" fill="#17251D"/>
+  <rect x="0" y="0" width="800" height="260" fill="#124A32"/>
+  <path d="M0 260 L800 260 L800 600 L0 600 Z" fill="#215B40"/>
+  <!-- Plotted Residential Layout Grid -->
+  <g stroke="#D5AD51" stroke-opacity="0.6" stroke-width="2">
+    <polygon points="120,320 360,320 330,440 80,440" fill="#82B440" fill-opacity="0.22"/>
+    <polygon points="380,320 640,320 670,440 350,440" fill="#D5AD51" fill-opacity="0.22"/>
+    <polygon points="75,460 325,460 295,565 40,565" fill="#FFFFFF" fill-opacity="0.1"/>
+    <polygon points="345,460 675,460 715,565 315,565" fill="#82B440" fill-opacity="0.25"/>
+  </g>
+  <!-- Approach Road -->
+  <polygon points="355,260 385,260 345,600 300,600" fill="#334155"/>
+  <rect x="28" y="28" width="245" height="40" rx="6" fill="#17251D" fill-opacity="0.85"/>
+  <text x="44" y="53" fill="#82B440" font-family="monospace" font-size="13" font-weight="600">RESIDENTIAL · DTCP / HMDA</text>
+</svg>

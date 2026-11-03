@@ -1,0 +1,45 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrapAdmin() {
+      return isSignedIn()
+        && request.auth.token.email == "tarunpediredla9966@gmail.com"
+        && request.auth.token.email_verified == true;
+    }
+
+    function isValidFileSize() {
+      return request.resource.size <= 10 * 1024 * 1024; // 10 MB max
+    }
+
+    function isValidDocumentType() {
+      return request.resource.contentType.matches('application/pdf')
+        || request.resource.contentType.matches('image/.*');
+    }
+
+    // Public property images (uploaded by owner or admin)
+    match /properties/{sellerId}/{propertyId}/photos/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn()
+        && (request.auth.uid == sellerId || isBootstrapAdmin())
+        && isValidFileSize()
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Protected ownership, survey, tax, and soil report documents
+    match /privateDocuments/{sellerId}/{propertyId}/{fileName} {
+      allow read: if isSignedIn() && (request.auth.uid == sellerId || isBootstrapAdmin());
+      allow write: if isSignedIn()
+        && (request.auth.uid == sellerId || isBootstrapAdmin())
+        && isValidFileSize()
+        && isValidDocumentType();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

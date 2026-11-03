@@ -1,0 +1,344 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Registered platform user profile (Buyer, Seller, Both, Agent, or Admin).",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "email": { "type": "string", "format": "email", "maxLength": 160 },
+        "phone": { "type": "string", "maxLength": 24 },
+        "altPhone": { "type": "string", "maxLength": 24 },
+        "address": { "type": "string", "maxLength": 300 },
+        "city": { "type": "string", "maxLength": 80 },
+        "state": { "type": "string", "maxLength": 80 },
+        "pinCode": { "type": "string", "maxLength": 12 },
+        "userType": { "type": "string", "enum": ["buyer", "seller", "both"] },
+        "role": { "type": "string", "enum": ["user", "agent", "admin"] },
+        "verificationStatus": { "type": "string", "enum": ["unverified", "pending", "verified"] },
+        "accountStatus": { "type": "string", "enum": ["active", "suspended"] },
+        "privacyConsent": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "fullName", "email", "phone", "userType", "role", "verificationStatus", "accountStatus", "createdAt", "updatedAt"]
+    },
+    "Property": {
+      "title": "Property",
+      "description": "Land parcel listing submitted by a seller and screened by SLT Culture.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "referenceId": { "type": "string", "maxLength": 40 },
+        "sellerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sellerName": { "type": "string", "maxLength": 120 },
+        "title": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "category": { "type": "string", "enum": ["Agricultural", "Residential", "Commercial", "Industrial"] },
+        "state": { "type": "string", "maxLength": 80 },
+        "district": { "type": "string", "maxLength": 80 },
+        "mandal": { "type": "string", "maxLength": 80 },
+        "village": { "type": "string", "maxLength": 100 },
+        "surveyNumber": { "type": "string", "maxLength": 60 },
+        "plotNumber": { "type": "string", "maxLength": 60 },
+        "area": { "type": "number" },
+        "areaUnit": { "type": "string", "enum": ["Acres", "Cents", "Sq. Ft.", "Sq. Yards"] },
+        "priceInr": { "type": "number" },
+        "isNegotiable": { "type": "boolean" },
+        "description": { "type": "string", "maxLength": 2000 },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "locationAddress": { "type": "string", "maxLength": 300 },
+        "roadAccess": { "type": "string", "maxLength": 120 },
+        "waterAvailability": { "type": "string", "maxLength": 120 },
+        "electricityAvailability": { "type": "string", "maxLength": 120 },
+        "currentLandUse": { "type": "string", "maxLength": 120 },
+        "ownershipDetails": { "type": "string", "maxLength": 500 },
+        "images": { "type": "array" },
+        "status": {
+          "type": "string",
+          "enum": ["Submitted", "Under Review", "Visit Scheduled", "Inspection Complete", "Documents Pending", "Approved", "Rejected", "Listed", "Negotiation", "Registration in Progress", "Closed"]
+        },
+        "screeningStage": { "type": "number" },
+        "screeningStatus": { "type": "string", "maxLength": 80 },
+        "testingStatus": { "type": "string", "maxLength": 80 },
+        "agentVisitStatus": { "type": "string", "maxLength": 80 },
+        "registrationAssistanceStatus": { "type": "string", "maxLength": 80 },
+        "assignedAgentId": { "type": "string", "maxLength": 128 },
+        "assignedAgentName": { "type": "string", "maxLength": 120 },
+        "rejectionReason": { "type": "string", "maxLength": 500 },
+        "publicScreeningSummary": { "type": "string", "maxLength": 1000 },
+        "isFlagged": { "type": "boolean" },
+        "isPublished": { "type": "boolean" },
+        "isSample": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "referenceId", "sellerId", "title", "category", "state", "district", "village", "surveyNumber", "area", "areaUnit", "priceInr", "isNegotiable", "status", "screeningStage", "isPublished", "createdAt", "updatedAt"]
+    },
+    "PropertyDocument": {
+      "title": "PropertyDocument",
+      "description": "Protected ownership, survey, tax, or testing document linked to a property.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sellerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "assignedAgentId": { "type": "string", "maxLength": 128 },
+        "docType": { "type": "string", "enum": ["ownership", "sale_deed", "ec", "tax_record", "survey", "soil_report", "land_photo"] },
+        "fileName": { "type": "string", "maxLength": 200 },
+        "fileUrl": { "type": "string", "maxLength": 500 },
+        "fileSize": { "type": "number" },
+        "mimeType": { "type": "string", "maxLength": 100 },
+        "verificationStatus": { "type": "string", "enum": ["pending", "verified", "rejected"] },
+        "reviewerNotes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "propertyId", "sellerId", "docType", "fileName", "fileUrl", "verificationStatus", "createdAt", "updatedAt"]
+    },
+    "ScreeningReport": {
+      "title": "ScreeningReport",
+      "description": "Field inspection and land testing report submitted by an SLT agent.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sellerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agentName": { "type": "string", "maxLength": 120 },
+        "boundariesVerified": { "type": "boolean" },
+        "roadAccessVerified": { "type": "boolean" },
+        "waterVerified": { "type": "boolean" },
+        "electricityVerified": { "type": "boolean" },
+        "ownershipRecordsChecked": { "type": "boolean" },
+        "soilTestingCompleted": { "type": "boolean" },
+        "soilQualitySummary": { "type": "string", "maxLength": 1000 },
+        "inspectionNotes": { "type": "string", "maxLength": 2000 },
+        "recommendation": { "type": "string", "enum": ["Approve", "Reject", "Further Verification Required"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "propertyId", "sellerId", "agentId", "agentName", "boundariesVerified", "roadAccessVerified", "waterVerified", "electricityVerified", "recommendation", "createdAt", "updatedAt"]
+    },
+    "InspectionRequest": {
+      "title": "InspectionRequest",
+      "description": "Seller request for an on-site SLT Culture agent visit and land verification.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "referenceId": { "type": "string", "maxLength": 40 },
+        "propertyTitle": { "type": "string", "maxLength": 160 },
+        "sellerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sellerName": { "type": "string", "maxLength": 120 },
+        "sellerPhone": { "type": "string", "maxLength": 24 },
+        "preferredDate": { "type": "string", "maxLength": 40 },
+        "preferredSlot": { "type": "string", "maxLength": 60 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "assignedAgentId": { "type": "string", "maxLength": 128 },
+        "assignedAgentName": { "type": "string", "maxLength": 120 },
+        "status": { "type": "string", "enum": ["Assigned", "Contacted", "Visit Scheduled", "Inspection Started", "Inspection Completed", "Report Submitted", "Pending Assignment"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "propertyId", "referenceId", "propertyTitle", "sellerId", "sellerName", "sellerPhone", "preferredDate", "status", "createdAt", "updatedAt"]
+    },
+    "BuyerEnquiry": {
+      "title": "BuyerEnquiry",
+      "description": "Buyer interest registration, callback request, or site visit request.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "enquiryId": { "type": "string", "maxLength": 40 },
+        "propertyId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyTitle": { "type": "string", "maxLength": 160 },
+        "propertyReferenceId": { "type": "string", "maxLength": 40 },
+        "sellerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "buyerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "buyerName": { "type": "string", "maxLength": 120 },
+        "buyerEmail": { "type": "string", "maxLength": 160 },
+        "buyerPhone": { "type": "string", "maxLength": 24 },
+        "buyerCity": { "type": "string", "maxLength": 80 },
+        "enquiryType": { "type": "string", "enum": ["Register Interest", "Request Callback", "Request Site Visit"] },
+        "preferredVisitDate": { "type": "string", "maxLength": 40 },
+        "message": { "type": "string", "maxLength": 1000 },
+        "assignedAgentId": { "type": "string", "maxLength": 128 },
+        "assignedAgentName": { "type": "string", "maxLength": 120 },
+        "assignedAgentPhone": { "type": "string", "maxLength": 24 },
+        "status": { "type": "string", "enum": ["Submitted", "Assigned", "Contacted", "Visit Scheduled", "Inspection Started", "Inspection Completed", "Report Submitted", "Negotiation", "Registration in Progress", "Closed"] },
+        "followUpNotes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "enquiryId", "propertyId", "propertyTitle", "sellerId", "buyerId", "buyerName", "buyerEmail", "buyerPhone", "enquiryType", "status", "createdAt", "updatedAt"]
+    },
+    "SavedProperty": {
+      "title": "SavedProperty",
+      "description": "Buyer favourite property bookmark.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "userId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "propertyId", "createdAt"]
+    },
+    "AgentAssignment": {
+      "title": "AgentAssignment",
+      "description": "Admin assignment linking an authorized agent to a property inspection or buyer enquiry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agentName": { "type": "string", "maxLength": 120 },
+        "assignmentType": { "type": "string", "enum": ["Property Inspection", "Buyer Enquiry"] },
+        "propertyId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyTitle": { "type": "string", "maxLength": 160 },
+        "relatedRecordId": { "type": "string", "maxLength": 128 },
+        "contactName": { "type": "string", "maxLength": 120 },
+        "contactPhone": { "type": "string", "maxLength": 24 },
+        "status": { "type": "string", "enum": ["Assigned", "Contacted", "Visit Scheduled", "Inspection Started", "Inspection Completed", "Report Submitted"] },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "agentId", "agentName", "assignmentType", "propertyId", "propertyTitle", "status", "createdAt", "updatedAt"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Scheduled physical land inspection or buyer site visit.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyTitle": { "type": "string", "maxLength": 160 },
+        "agentId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agentName": { "type": "string", "maxLength": 120 },
+        "participantId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "participantName": { "type": "string", "maxLength": 120 },
+        "participantPhone": { "type": "string", "maxLength": 24 },
+        "participantRole": { "type": "string", "enum": ["buyer", "seller"] },
+        "visitDate": { "type": "string", "maxLength": 40 },
+        "visitTime": { "type": "string", "maxLength": 40 },
+        "meetingPoint": { "type": "string", "maxLength": 200 },
+        "status": { "type": "string", "enum": ["Visit Scheduled", "Completed", "Rescheduled", "Cancelled"] },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "propertyId", "propertyTitle", "agentId", "agentName", "participantId", "participantName", "participantRole", "visitDate", "visitTime", "status", "createdAt", "updatedAt"]
+    },
+    "RegistrationCase": {
+      "title": "RegistrationCase",
+      "description": "10-stage land screening, negotiation, and sub-registrar coordination case.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "caseNumber": { "type": "string", "maxLength": 40 },
+        "propertyId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "propertyTitle": { "type": "string", "maxLength": 160 },
+        "sellerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "sellerName": { "type": "string", "maxLength": 120 },
+        "buyerId": { "type": "string", "maxLength": 128 },
+        "buyerName": { "type": "string", "maxLength": 120 },
+        "assignedAgentId": { "type": "string", "maxLength": 128 },
+        "assignedAgentName": { "type": "string", "maxLength": 120 },
+        "currentStage": { "type": "number" },
+        "status": { "type": "string", "enum": ["Submitted", "Under Review", "Visit Scheduled", "Inspection Complete", "Documents Pending", "Approved", "Rejected", "Listed", "Negotiation", "Registration in Progress", "Closed"] },
+        "subRegistrarOffice": { "type": "string", "maxLength": 160 },
+        "appointmentDate": { "type": "string", "maxLength": 40 },
+        "coordinationNotes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "caseNumber", "propertyId", "propertyTitle", "sellerId", "sellerName", "currentStage", "status", "createdAt", "updatedAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "Persistent real-time notification for a user or administrator.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "recipientId": { "type": "string", "maxLength": 128 },
+        "senderId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 160 },
+        "message": { "type": "string", "maxLength": 500 },
+        "category": { "type": "string", "enum": ["submission", "approval", "enquiry", "assignment", "appointment", "registration"] },
+        "link": { "type": "string", "maxLength": 200 },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "recipientId", "senderId", "title", "message", "category", "isRead", "createdAt", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable record of privileged administrative or agent actions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "actorEmail": { "type": "string", "maxLength": 160 },
+        "actorRole": { "type": "string", "maxLength": 40 },
+        "action": { "type": "string", "maxLength": 160 },
+        "targetCollection": { "type": "string", "maxLength": 80 },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "actorId", "actorEmail", "actorRole", "action", "targetCollection", "targetId", "details", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles and RBAC role records."
+    },
+    "/properties/{propertyId}": {
+      "schema": { "$ref": "#/entities/Property" },
+      "description": "Land parcel listings and 10-stage screening progress."
+    },
+    "/propertyDocuments/{docId}": {
+      "schema": { "$ref": "#/entities/PropertyDocument" },
+      "description": "Protected ownership, survey, and testing document metadata."
+    },
+    "/screeningReports/{reportId}": {
+      "schema": { "$ref": "#/entities/ScreeningReport" },
+      "description": "Agent field inspection and testing verification reports."
+    },
+    "/inspectionRequests/{requestId}": {
+      "schema": { "$ref": "#/entities/InspectionRequest" },
+      "description": "Seller requests for agent land visits."
+    },
+    "/buyerEnquiries/{enquiryId}": {
+      "schema": { "$ref": "#/entities/BuyerEnquiry" },
+      "description": "Buyer interest registrations and site visit enquiries."
+    },
+    "/savedProperties/{savedId}": {
+      "schema": { "$ref": "#/entities/SavedProperty" },
+      "description": "Buyer saved favourite properties."
+    },
+    "/agentAssignments/{assignmentId}": {
+      "schema": { "$ref": "#/entities/AgentAssignment" },
+      "description": "Admin assignments of field agents to properties and enquiries."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/Appointment" },
+      "description": "Scheduled site visits and physical inspections."
+    },
+    "/registrationCases/{caseId}": {
+      "schema": { "$ref": "#/entities/RegistrationCase" },
+      "description": "Land screening and registration assistance tracking cases."
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "Persistent real-time notifications."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Immutable administrative audit logs."
+    }
+  }
+}

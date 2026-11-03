@@ -1,0 +1,6 @@
+{
+  "name": "SLT Culture – Land Screening and Transforming (LST)",
+  "description": "Real-time land screening, verification, agent coordination, and real estate transaction platform by SLT Culture. Your Land. Our Responsibility. A Better Future.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

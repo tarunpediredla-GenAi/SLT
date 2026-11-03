@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" fill="none">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0D3825"/>
+      <stop offset="55%" stop-color="#124A32"/>
+      <stop offset="100%" stop-color="#1E6B47"/>
+    </linearGradient>
+    <linearGradient id="goldGlow" x1="0.8" y1="0.1" x2="0.2" y2="0.9">
+      <stop offset="0%" stop-color="#D5AD51" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#82B440" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="field1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#82B440"/>
+      <stop offset="100%" stop-color="#3C7A34"/>
+    </linearGradient>
+    <linearGradient id="field2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#28633E"/>
+      <stop offset="100%" stop-color="#124A32"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#sky)"/>
+  <circle cx="920" cy="180" r="140" fill="url(#goldGlow)"/>
+  <circle cx="920" cy="180" r="56" fill="#D5AD51" fill-opacity="0.85"/>
+  <!-- Topographic Survey Lines -->
+  <g stroke="#D5AD51" stroke-opacity="0.18" stroke-width="1.5">
+    <path d="M0 140 Q 320 90 640 150 T 1200 120" fill="none"/>
+    <path d="M0 210 Q 360 150 700 220 T 1200 180" fill="none"/>
+    <path d="M0 280 Q 400 220 760 280 T 1200 240" fill="none"/>
+  </g>
+  <!-- Distant Hills -->
+  <path d="M0 410 Q 250 320 540 385 T 1200 350 L 1200 675 L 0 675 Z" fill="#165338"/>
+  <!-- Midground Cultivated Terraces -->
+  <path d="M0 470 Q 380 390 780 455 T 1200 420 L 1200 675 L 0 675 Z" fill="url(#field2)"/>
+  <path d="M0 535 Q 420 465 860 530 T 1200 500 L 1200 675 L 0 675 Z" fill="url(#field1)"/>
+  <!-- Surveyed Parcel Grid Overlay -->
+  <g stroke="#FFFFFF" stroke-opacity="0.32" stroke-width="2" stroke-dasharray="8 6">
+    <polygon points="220,520 560,465 720,575 310,640" fill="#D5AD51" fill-opacity="0.14"/>
+    <polygon points="580,462 910,490 1050,595 740,575" fill="#FFFFFF" fill-opacity="0.08"/>
+  </g>
+  <!-- Boundary Corner Pillars -->
+  <g fill="#D5AD51">
+    <circle cx="220" cy="520" r="6"/>
+    <circle cx="560" cy="465" r="6"/>
+    <circle cx="720" cy="575" r="6"/>
+    <circle cx="310" cy="640" r="6"/>
+    <circle cx="910" cy="490" r="6"/>
+    <circle cx="1050" cy="595" r="6"/>
+  </g>
+  <!-- Survey Marker Callout -->
+  <g transform="translate(365, 495)">
+    <rect x="0" y="0" width="210" height="54" rx="8" fill="#17251D" fill-opacity="0.88" stroke="#D5AD51" stroke-width="1.5"/>
+    <circle cx="24" cy="27" r="7" fill="#82B440"/>
+    <text x="42" y="23" fill="#FFFFFF" font-family="sans-serif" font-size="12" font-weight="700">SURVEY VERIFIED PARCEL</text>
+    <text x="42" y="40" fill="#D5AD51" font-family="monospace" font-size="11">SY NO. 142/A · GPS PINNED</text>
+  </g>
+</svg>
